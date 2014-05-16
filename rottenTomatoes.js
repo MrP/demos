@@ -3,19 +3,19 @@
 	var dot = wu.autoCurry(function (prop, obj){
 		return obj[prop];
 	});
-	var stringBinFn = function(value, values){
+	var stringBinFn = function(variableValue, values){
 		values.sort(function(a, b){
 			return a<b?-1:(a>b?1:0);
 		});
-		return _.uniq(values).indexOf(value);
+		return _.uniq(values).indexOf(variableValue);
 	};
 	
-	var numberBinFn = function(value, values){
+	var numberBinFn = function(variableValue, values){
 		var max = _.max(values), min = _.min(values);
 		var numBins = Math.min(10, max-min+1);
 		var currentBin = 0;
 		for(var bin=0;bin<numBins;++bin){
-			if(value>=min+(max-min)*bin/numBins){
+			if(variableValue>=min+(max-min)*bin/numBins){
 				currentBin = bin;
 			}
 		}
@@ -61,21 +61,21 @@
 	
 	function setupApp(movies){
 		addVariable(movies, 'Runtime', dot('runtime'), numberBinFn);
-		addVariable(movies, 'Release month', function(m){
-			return parseInt(m.release_dates.theater.match(/-(\d\d)-/)[1], 10);
+		addVariable(movies, 'Release month', function(movie){
+			return parseInt(movie.release_dates.theater.match(/-(\d\d)-/)[1], 10);
 		}, numberBinFn);
 		addVariable(movies, 'MPAA rating', dot('mpaa_rating'), stringBinFn);
-		addVariable(movies, 'Number of words in the title', function(m){
-			return m.title.split(/\s/).length;
+		addVariable(movies, 'Number of words in the title', function(movie){
+			return movie.title.split(/\s/).length;
 		}, numberBinFn);
-		addVariable(movies, 'Number of words in the synopsis', function(m){
-			return m.synopsis.split(/\s/).length;
+		addVariable(movies, 'Number of words in the synopsis', function(movie){
+			return movie.synopsis.split(/\s/).length;
 		}, numberBinFn);
-		addVariable(movies, 'Number of digits in the title', function(m){
-			return m.title.replace(/\D/g,'').length;
+		addVariable(movies, 'Number of digits in the title', function(movie){
+			return movie.title.replace(/\D/g,'').length;
 		}, numberBinFn);
-		addVariable(movies, 'First letter of the title', function(m){
-			return m.title[0].toUpperCase();
+		addVariable(movies, 'First letter of the title', function(movie){
+			return movie.title[0].toUpperCase();
 		}, stringBinFn);
 		$('#loading').remove();
 		$('#variables input')[0].click();
