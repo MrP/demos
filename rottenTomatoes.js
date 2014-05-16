@@ -1,10 +1,12 @@
 (function(){
-	//This section massages the data to generate the charts
+	//Massages the data to generate the charts
 	var dot = wu.autoCurry(function (prop, obj){
 		return obj[prop];
 	});
 	var stringBinFn = function(value, values){
-		values.sort(function(a, b){return a<b?-1:(a>b?1:0);});
+		values.sort(function(a, b){
+			return a<b?-1:(a>b?1:0);
+		});
 		return _.uniq(values).indexOf(value);
 	};
 	
@@ -50,37 +52,49 @@
 			if($(this).prop('checked', true)){
 				var data = google.visualization.arrayToDataTable(getDataArray(movies, label, getVariable, binFn));
 				var chart = new google.visualization.ColumnChart(document.getElementById('chart'));
-				chart.draw(data, {isStacked: true, hAxis: {title: label}, colors:['green', 'yellow', 'red']});
+				chart.draw(data, {isStacked: true, 
+						hAxis: {title: label}, 
+						colors:['green', 'yellow', 'red']});
 			}
 		});
 	}
 	
-    function setupApp(movies){
+	function setupApp(movies){
 		addVariable(movies, 'Runtime', dot('runtime'), numberBinFn);
-		addVariable(movies, 'Release month', function(m){return parseInt(m.release_dates.theater.match(/-(\d\d)-/)[1], 10);}, numberBinFn);
+		addVariable(movies, 'Release month', function(m){
+			return parseInt(m.release_dates.theater.match(/-(\d\d)-/)[1], 10);
+		}, numberBinFn);
 		addVariable(movies, 'MPAA rating', dot('mpaa_rating'), stringBinFn);
-		addVariable(movies, 'Number of words in the title', function(m){return m.title.split(/\s/).length;}, numberBinFn);
-		addVariable(movies, 'Number of words in the synopsis', function(m){return m.synopsis.split(/\s/).length;}, numberBinFn);
-		addVariable(movies, 'Number of digits in the title', function(m){return m.title.replace(/\D/g,'').length;}, numberBinFn);
-		addVariable(movies, 'First letter of the title', function(m){return m.title[0].toUpperCase();}, stringBinFn);
+		addVariable(movies, 'Number of words in the title', function(m){
+			return m.title.split(/\s/).length;
+		}, numberBinFn);
+		addVariable(movies, 'Number of words in the synopsis', function(m){
+			return m.synopsis.split(/\s/).length;
+		}, numberBinFn);
+		addVariable(movies, 'Number of digits in the title', function(m){
+			return m.title.replace(/\D/g,'').length;
+		}, numberBinFn);
+		addVariable(movies, 'First letter of the title', function(m){
+			return m.title[0].toUpperCase();
+		}, stringBinFn);
 		$('#loading').remove();
 		$('#variables input')[0].click();
-    }
+	}
 	
 	//Gets the data from the server
-    var movies = [];
-    function processJsonp(data){
+	var movies = [];
+	function processJsonp(data){
 		movies = movies.concat(_.reject(data.movies, _.compose(_.isUndefined, dot('critics_rating'), dot('ratings'))));
-        if(data.links.next && movies.length<=100){
+		if(data.links.next && movies.length<=100){
 			$('#loading').text($('#loading').text()+'...');
 			$.get(data.links.next+"&callback=processJsonp&apikey=erwdg8fnngbwfw92krs7mw9w");
 		}else{
 			setupApp(movies);
 		}
-    }
+	}
     
 	google.load("visualization", "1", {packages:["corechart"]});
-    $.ajaxSetup({dataType:'jsonp'});
-    $.get('http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json?apikey=erwdg8fnngbwfw92krs7mw9w&callback=processJsonp&page_limit=50');  
+	$.ajaxSetup({dataType:'jsonp'});
+	$.get('http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json?apikey=erwdg8fnngbwfw92krs7mw9w&callback=processJsonp&page_limit=50');  
 	
 })();
