@@ -1,11 +1,13 @@
+(function(){
 	//This section massages the data to generate the charts
-    var dot = wu.autoCurry(function (prop, obj){
+	var dot = wu.autoCurry(function (prop, obj){
 		return obj[prop];
-    });
+	});
 	var stringBinFn = function(value, values){
 		values.sort(function(a, b){return a<b?-1:(a>b?1:0);});
 		return _.uniq(values).indexOf(value);
 	};
+	
 	var numberBinFn = function(value, values){
 		var max = _.max(values), min = _.min(values);
 		var numBins = Math.min(10, max-min+1);
@@ -17,7 +19,8 @@
 		}
 		return currentBin;
 	};
-	function getDataArray(movies, label, getVariable/*movie*/, binFn/*variableValue, values*/){
+	
+	function getDataArray(movies, label, getVariable/*(movie)*/, binFn/*(variableValue, values)*/){
 		var validMovies = _.reject(movies, _.compose(_.isUndefined, getVariable));
 		var bins = [];
 		validMovies.forEach(function(movie){
@@ -27,7 +30,7 @@
 		});
 		var ratings = ['Rotten', 'Fresh', 'Certified Fresh'];
 		var dataArray = [[label].concat(ratings)].concat(bins.map(function(bin){
-			var ratingsBin=_.object(ratings, [0,0,0]);
+			var ratingsBin = _.object(ratings, [0,0,0]);
 			bin.forEach(function(m){
 				ratingsBin[m.ratings.critics_rating]++;
 			});
@@ -51,6 +54,7 @@
 			}
 		});
 	}
+	
     function setupApp(movies){
 		addVariable(movies, 'Runtime', dot('runtime'), numberBinFn);
 		addVariable(movies, 'Release month', function(m){return parseInt(m.release_dates.theater.match(/-(\d\d)-/)[1], 10);}, numberBinFn);
@@ -63,7 +67,7 @@
 		$('#variables input')[0].click();
     }
 	
-	//This section gets the data from the server
+	//Gets the data from the server
     var movies = [];
     function processJsonp(data){
 		movies = movies.concat(_.reject(data.movies, _.compose(_.isUndefined, dot('critics_rating'), dot('ratings'))));
@@ -74,7 +78,9 @@
 			setupApp(movies);
 		}
     }
+    
 	google.load("visualization", "1", {packages:["corechart"]});
     $.ajaxSetup({dataType:'jsonp'});
     $.get('http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json?apikey=erwdg8fnngbwfw92krs7mw9w&callback=processJsonp&page_limit=50');  
 	
+})();
