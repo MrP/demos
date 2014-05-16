@@ -75,7 +75,7 @@
 	}
 	
 	function setupApp(movies){
-		addVariable(movies, 'Runtime', dot('runtime'), numberBinFn);
+		addVariable(movies, 'Runtime in minutes', dot('runtime'), numberBinFn);
 		addVariable(movies, 'Release month', function(movie){
 			return parseInt(movie.release_dates.theater.match(/-(\d\d)-/)[1], 10);
 		}, numberBinFn);
