@@ -1,8 +1,15 @@
 (function(){
-	//Massages the data to generate the charts
+	var urlAPI = 'http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
+	var paramsAPI = {'apikey':'erwdg8fnngbwfw92krs7mw9w', 
+		'callback':'processJsonp',
+		'page_limit':'50'};
+		
 	var dot = wu.autoCurry(function (prop, obj){
 		return obj[prop];
 	});
+	
+	// The string bin function will have a bin for each possible value,
+	// so the pool of possible values should be sensible
 	var stringBinFn = function(variableValue, values){
 		values.sort(function(a, b){
 			return a<b?-1:(a>b?1:0);
@@ -10,12 +17,16 @@
 		return _.uniq(values).indexOf(variableValue);
 	};
 	
+	// Then number binning function puts numbers into at most 10 equally wide bins 
 	var numberBinFn = function(variableValue, values){
-		var max = _.max(values), min = _.min(values);
+		var max = _.max(values);
+		var min = _.min(values);
+		// Cap the number of bins to 10
 		var numBins = Math.min(10, max-min+1);
 		var currentBin = 0;
+		var binWidth = (max-min)/numBins;
 		for(var bin=0;bin<numBins;++bin){
-			if(variableValue>=min+(max-min)*bin/numBins){
+			if(variableValue >= min+binWidth*bin){
 				currentBin = bin;
 			}
 		}
@@ -44,7 +55,10 @@
 		return _.compact(dataArray);
 	}
 	
-	//This section sets up the application and deals with the DOM
+	// Sets up the application and deals with the DOM
+	// getVariable This function knows how to extract the variable to plot from the movie data structure
+	// binFn The binning function knows how to handle the variable type to sort the value in the right
+	//       bin
 	function addVariable(movies, label, getVariable/*movie*/, binFn/*variableValue, values*/){
 		var variableId = 'variable'+$('#variables input').length;
 		$('#variables').append('<br><input type="radio" id="'+variableId+'" name="variableRadios" /><label for="'+variableId+'">'+label+'</label>');
@@ -83,11 +97,14 @@
 	
 	//Gets the data from the server
 	var movies = [];
+	// this is the function that will be called from the JSONP response, automatically.  See its name in the 
+	// ajax GET URL
 	function processJsonp(data){
+		// Get rid of movies without ratings
 		movies = movies.concat(_.reject(data.movies, _.compose(_.isUndefined, dot('critics_rating'), dot('ratings'))));
-		if(data.links.next && movies.length<=100){
+		if(data.links.next && movies.length<=100){ //Limit it to not hammer the API too much
 			$('#loading').text($('#loading').text()+'...');
-			$.get(data.links.next+"&callback=processJsonp&apikey=erwdg8fnngbwfw92krs7mw9w");
+			$.get(data.links.next, paramsAPI);
 		}else{
 			setupApp(movies);
 		}
@@ -95,6 +112,8 @@
     
 	google.load("visualization", "1", {packages:["corechart"]});
 	$.ajaxSetup({dataType:'jsonp'});
-	$.get('http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json?apikey=erwdg8fnngbwfw92krs7mw9w&callback=processJsonp&page_limit=50');  
 	
+	$.ready(function{
+		$.get(urlAPI, paramsAPI);  
+	});
 })();
