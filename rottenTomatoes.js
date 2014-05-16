@@ -61,7 +61,8 @@
 	//       bin
 	function addVariable(movies, label, getVariable/*movie*/, binFn/*variableValue, values*/){
 		var variableId = 'variable'+$('#variables input').length;
-		$('#variables').append('<br><input type="radio" id="'+variableId+'" name="variableRadios" /><label for="'+variableId+'">'+label+'</label>');
+		var html = _.template($('#variableTemplate').html(), {variableId:variableId, label:label});
+		$('#variables').append(html);
 		$('#'+variableId).on('change', function(){
 			if($(this).prop('checked', true)){
 				var data = google.visualization.arrayToDataTable(getDataArray(movies, label, getVariable, binFn));
