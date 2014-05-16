@@ -100,7 +100,7 @@
 	var movies = [];
 	// this is the function that will be called from the JSONP response, automatically.  See its name in the 
 	// ajax GET URL
-	function processJsonp(data){
+	var processJsonp = function(data){
 		// Get rid of movies without ratings
 		movies = movies.concat(_.reject(data.movies, _.compose(_.isUndefined, dot('critics_rating'), dot('ratings'))));
 		if(data.links.next && movies.length<=100){ //Limit it to not hammer the API too much
@@ -112,6 +112,6 @@
 	}
     
 	google.load("visualization", "1", {packages:["corechart"]});
-	$.ajaxSetup({dataType:'jsonp'});
+	$.ajaxSetup({dataType:'jsonp', success:processJsonp);
 	$.get(urlAPI, paramsAPI);  
 })();
