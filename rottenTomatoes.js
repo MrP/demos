@@ -113,8 +113,5 @@
     
 	google.load("visualization", "1", {packages:["corechart"]});
 	$.ajaxSetup({dataType:'jsonp'});
-	
-	$.ready(function(){
-		$.get(urlAPI, paramsAPI);  
-	});
+	$.get(urlAPI, paramsAPI);  
 })();
