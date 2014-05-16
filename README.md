@@ -4,4 +4,4 @@ demos
 Cool stuff
 
 
-<a href="http://mrp.github.io/demos/">Demos</a>
+<a href="http://rawgit.com/MrP/demos/master/rottenTomatoes.html">Rotten tomatoes</a>
