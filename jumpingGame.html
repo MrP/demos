@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script type="text/javascript" src="http://github.com/downloads/fitzgen/wu.js/wu-0.1.8.min.js"></script>
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
-    <link type="text/css" rel="stylesheet" href="http://rawgit.com/MrP/demos/master/jumpingGame.css">
-  </head>
-  <body>
-    <script type="text/javascript" src="http://rawgit.com/MrP/demos/master/jumpingGame.js"></script>
-  </body>
+    <head>
+        <meta name="viewport" content="width=device-width, user-scalable=no">
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+        <link type="text/css" rel="stylesheet" href="jumpingGame.css">
+    </head>
+    <body>
+        <div id="hud">
+            <div id="current-level"></div>
+            <div id="lives-left"></div>
+            <div id="help"></div>
+            <div id="text"></div>
+        </div>
+        <div id="game">
+        </div>
+        <canvas id="canvas" width="320px" height="400px"></canvas>
+        <script type="text/javascript" src="jumpingGame.js"></script>
+    </body>
 </html>
