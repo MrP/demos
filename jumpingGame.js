@@ -122,7 +122,7 @@
                 generateLevel(gameState);
             } else if(between(gameState.player.jumpingFor, 0.6, 0.8) && !gameState.holes.filter(sameRowPlayer).some(collidesPlayer)){
                 //check collision against ceiling
-                gameState.player.stunnedFor += 3;
+                gameState.player.stunnedFor = 3;
                 gameState.player.fallingFor = 1-gameState.player.jumpingFor;
                 gameState.player.jumpingFor = 0;
             }
@@ -139,7 +139,7 @@
             return;
         }
         if(canBeBitten(gameState.player) && gameState.critters.filter(sameRowPlayer).some(collidesPlayer)){
-            gameState.player.stunnedFor += 2;
+            gameState.player.stunnedFor = 2;
             gameState.player.speed = 0;
             return;
         }
