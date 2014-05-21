@@ -1,18 +1,16 @@
-(function(_, $){
-    var numRows = 6;
-    var levelWidth = 320;
-    var speed = 50;
-    var holeWidth = 32;
-    var critterWidth = 16;
-    var playerWidth = 16
-    var rowHeight = 64;
-
+(function(_, $, window){
     var gameState = {
+        speed: 50,
+        numRows: 6,
+        width: 320,
+        height: 400,
         level: 0,
         livesLeft: 3,
         player: {
+            width: 16,
+            height: 30,
             row:0,
-            position:0,
+            position:160,
             jumpingFor: 0,
             fallingFor: 0,
             stunnedFor: 0,
@@ -21,14 +19,24 @@
         maxRow:0,
         holes: [],
         critters: [],
-        
+        rowHeight: 64
     };
     var generateLevel = function(gameState){
         gameState.holes = [];
         gameState.critters = [];
-        gameState.generateHole = _.partial(generateMovingObject, getRandomRowBalancedGenerator());
-        gameState.generateCritter = _.partial(generateMovingObject, getRandomRowBalancedGenerator());
-        for(var i=0;i<numRows+gameState.level;i+=1){
+        gameState.generateHole = function(){
+            var hole = generateMovingObjectInBalancedRow();
+            hole.width = 32;
+            hole.height = 64;
+            return hole;
+        };
+        gameState.generateCritter = function(){
+            var critter = generateMovingObjectInBalancedRow();
+            critter.width = 16;
+            critter.height = 30;
+            return critter;
+        };
+        for(var i=0;i<gameState.numRows+gameState.level;i+=1){
             gameState.holes.push(gameState.generateHole());
         }
         for(i=0;i<gameState.level-1;i+=1){
@@ -45,28 +53,27 @@
         return {
             row: generateRowFunction(),
             position: randomPosition(),
-            speed: randomSign()*speed
+            speed: randomSign()
         };
     };
     var rand = function(max){
         return Math.floor(Math.random() * max);
     };
-    var randomRow = _.partial(rand, numRows);
-    var randomPosition = _.partial(rand, levelWidth);
+    var randomPosition = _.partial(rand, gameState.width);
     var randomSign = function(){
         return (rand(2)-0.5)*2;
     };
     var getRandomRowBalancedGenerator = function(){
-        var exceptedRows = []
+        var exceptedRows = [];
         var ret = function(){
-            var r = rand(numRows-exceptedRows.length);
-            for(var i=0;i<numRows;i+=1){
+            var r = rand(gameState.numRows-exceptedRows.length);
+            for(var i=0;i<gameState.numRows;i+=1){
                 if(exceptedRows.indexOf(i) !== -1){
                     r+=1;
                 }
                 if(exceptedRows.indexOf(r) === -1){
                     exceptedRows.push(r);
-                    if(exceptedRows.length>=numRows){
+                    if(exceptedRows.length>=gameState.numRows){
                         exceptedRows = [];
                     }
                     return r;
@@ -74,91 +81,104 @@
             }
         };
         return ret;
-    }
+    };
+    var generateMovingObjectInBalancedRow = _.partial(generateMovingObject, getRandomRowBalancedGenerator());
     var timestamp = function() {
         return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
     };
     
     var moveObject = function(dt, obj){
-        obj.position = (obj.position + obj.speed * dt + levelWidth)%levelWidth;
+        obj.position = (obj.position + gameState.speed * obj.speed * dt + gameState.width)%gameState.width;
     };
     
-    var minZero = _.partial(Math.min, 0);
+    var maxZero = _.partial(Math.max, 0);
     
-    var updateGameState = function(dt){
+    var updateGameState = function(gameState, dt){
         var move = _.partial(moveObject, dt);
+        var sameRowPlayer = _.partial(sameRow, gameState.player);
+        var previousRowPlayer = _.partial(previousRow, gameState.player);
+        var collidesPlayer = _.partial(collides, gameState.player);
         gameState.holes.forEach(move);
         gameState.critters.forEach(move);
-        if(gameState.player.fallingFor){
-            gameState.player.fallingFor = minZero(gameState.player.fallingFor-dt);
+        if(gameState.player.fallingFor > 0){
+            gameState.player.fallingFor = maxZero(gameState.player.fallingFor-dt);
         }
-        if(gameState.player.jumpingFor){
-            gameState.player.jumpingFor = minZero(gameState.player.jumpingFor-dt);
-            // level up
-            if(gameState.player.jumpingFor===0 && gameState.player.row>=numRows){
+        if(gameState.player.jumpingFor > 0){
+            gameState.player.jumpingFor = maxZero(gameState.player.jumpingFor-dt);
+            if(gameState.player.jumpingFor===0){
+                gameState.player.row +=1;
+                if(gameState.player.row>gameState.maxRow){
+                    gameState.maxRow = gameState.player.row;
+                    gameState.holes.push(gameState.generateHole());
+                }
+                // level up
+                if(gameState.player.row>=gameState.numRows){
+                    gameState.level +=1;
+                    generateLevel(gameState);
+                }
+            } else
+            if(gameState.player.row>=gameState.numRows){
                 gameState.level +=1;
                 generateLevel(gameState);
-            } else if(between(gameState.player.jumpingFor, 0.4, 0.6) && !gameState.holes.some(_.partial(collidesHole, gameState.player))){
+            } else if(between(gameState.player.jumpingFor, 0.6, 0.8) && !gameState.holes.filter(sameRowPlayer).some(collidesPlayer)){
                 //check collision against ceiling
-                gameState.player.stunnedFor += 1;
+                gameState.player.stunnedFor += 3;
                 gameState.player.fallingFor = 1-gameState.player.jumpingFor;
                 gameState.player.jumpingFor = 0;
             }
         }
         if(gameState.player.stunnedFor){
-            gameState.player.stunnedFor = minZero(gameState.player.stunnedFor-dt);
+            gameState.player.stunnedFor = maxZero(gameState.player.stunnedFor-dt);
         }
         if(canMove(gameState.player)){
             move(gameState.player);
         }
-        if(canFall(gameState.player) && gameState.holes.some(_.partial(collidesHole, gameState.player))){
-            gameState.player.fallingFor = 1;
+        if(canFall(gameState.player) && gameState.holes.filter(previousRowPlayer).some(collidesPlayer)){
             gameState.player.row -=1;
-            return
+            gameState.player.fallingFor = 1;
+            return;
         }
-        if(canBeBitten(gameState.player) && gameState.critters.some(_.partial(collidesCritter, gameState.player))){
-            gameState.player.stunnedFor += 1;
-            return
+        if(canBeBitten(gameState.player) && gameState.critters.filter(sameRowPlayer).some(collidesPlayer)){
+            gameState.player.stunnedFor += 2;
+            gameState.player.speed = 0;
+            return;
         }
+    };
+    var sameRow = function(player, obj){
+        return player.row === obj.row;
+    };
+    var previousRow = function(player, obj){
+        return player.row-1 === obj.row;
     };
     var between = function(num, left, right){
         return num>left && num<right;
     };
-    var collides = function(width, player, obj){
-        return player.row===obj.row && between(player.position, obj.position - width/2, obj.position + width/2);
-    }
-    var collidesHole = _.partial(collides, holeWidth);
-    var collidesCritter = _.partial(collides, critterWidth);
+    var collides = function(player, obj){
+        return between(player.position, obj.position - obj.width/2, obj.position + obj.width/2);
+    };
     var canMove = function(player){
         return player.stunnedFor===0 && player.jumpingFor===0 && player.fallingFor===0;
     };
     var canFall = function(player){
-        return player.jumpingFor===0 && player.fallingFor===0;
+        return player.jumpingFor===0 && player.fallingFor===0 && player.row > 0;
     };
     var canBeBitten = function(player){
         return player.jumpingFor===0 && player.fallingFor===0;
     };
-    var playerStanding = function(player){
-        return !player.jumpingFor  && !player.fallingFor;
-    };
-    var playerCanInteract = function(player){
-        return !player.stunnedFor && playerStanding(player);
-    };
     var leftInteraction = function(player){
         if(canMove(player)){
-            player.speed = -speed;
+            player.speed = -2;
         }
     };
     var rightInteraction = function(player){
         if(canMove(player)){
-            player.speed = speed;
+            player.speed = 2;
         }
     };
     var jumpInteraction = function(player){
         if(canMove(player)){
             player.speed = 0;
             player.jumpingFor = 1;
-            player.row += 1;
         }
     };
     var stopInteraction = function(player){
@@ -179,116 +199,26 @@
         });
     };
     
-    var gameTick = function(now) {
+    var gameTick = function(renderer, gameState, now) {
       var dt = Math.min(1, (now - last) / 1000);
-      updateGameState(dt);
-      renderDOM(dt);
+      updateGameState(gameState, dt);
+      renderer.renderFrame(gameState, dt);
       last = now;
-      rafID = window.requestAnimationFrame(gameTick);
-    }
-    
-    var renderCanvas = function(dt){
-        var floorColor = "#000";
-        var backgroundColor = "#fff";
-        clearOurCanvas();
-        for(var i=0;i<numRows;i++){
-            paintFloorInOurCanvas(rowY(i));
-        }
-        gameState.holes.forEach(paintHoleInOurCanvas);
-        gameState.critters.forEach(paintCritterInOurCanvas);
-        paintPlayerInOurCanvas(gameState.player);
-    }
-    
-    var clearCanvas = function(canvas){
-        
-    };
-    var paintFloor = function(canvas, height){
-        
-    };
-    var paintHole = function(canvas, hole){
-        
-    };
-    var paintCritter = function(canvas, critter){
-        
-    };
-    var paintPlayer = function(canvas, player){
-        
+      rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameState));
     };
     
-    var canvas = document.getElementById("canvas");
-    var clearOurCanvas = _.partial(clearCanvas, canvas);
-    var paintFloorInOurCanvas = _.partial(paintFloor, canvas);
-    var paintHoleInOurCanvas = _.partial(paintHole, canvas);
-    var paintCritterInOurCanvas = _.partial(paintCritter, canvas);
-    var paintPlayerInOurCanvas = _.partial(paintPlayer, canvas);
-    
-    
-    var renderDOM = function(dt){
-        var floorColor = "#000";
-        var backgroundColor = "#fff";
-        clearOurDOM();
-        for(var i=0;i<numRows;i++){
-            paintFloorInOurDOM(i);
-        }
-        gameState.holes.forEach(paintHoleInOurDOM);
-        gameState.critters.forEach(paintCritterInOurDOM);
-        paintPlayerInOurDOM(gameState.player);
-    }
-    
-    var clearDOM = function(gameDiv){
-        gameDiv.innerHTML = "";
-    };
-    var paintFloorDOM = function(gameDiv, row){
-        var $floor = $('<div class="floor"></div>');
-        $floor.css({top:""+rowY(row)+"px"});
-        $(gameDiv).append($floor);
-    };
-    var paintHoleDOM = function(gameDiv, hole){
-        var $hole = $('<div class="hole"></div>');
-        $hole.css({top:""+holeY(hole)+"px", left:""+holeX(hole)+"px"});
-        $(gameDiv).append($hole);
-    };
-    var paintCritterDOM = function(gameDiv, critter){
-        var $critter = $('<div class="critter"></div>');
-        $critter.css({bottom:""+critterY(critter)+"px", left:""+critterX(critter)+"px"});
-        $(gameDiv).append($critter);
-    };
-    var paintPlayerDOM = function(gameDiv, player){
-        var $player = $('<div id="player"></div>');
-        $player.css({bottom:""+playerY(player)+"px", left:""+playerX(player)+"px"});
-        $(gameDiv).append($player);
-    };
-    
-    var gameDiv = document.getElementById("game");
-    var clearOurDOM = _.partial(clearDOM, gameDiv);
-    var paintFloorInOurDOM = _.partial(paintFloorDOM, gameDiv);
-    var paintHoleInOurDOM = _.partial(paintHoleDOM, gameDiv);
-    var paintCritterInOurDOM = _.partial(paintCritterDOM, gameDiv);
-    var paintPlayerInOurDOM = _.partial(paintPlayerDOM, gameDiv);
-    
-    
-    var rowY = _.partial(function(numRows, rowHeight, row){
-        return row*rowHeight+32;
-    }, numRows, rowHeight);
-    var objYHeight = function(height, obj){
-        return rowY(obj.row)-height;
-    };
-    var holeY = _.partial(objYHeight, 0);
-    var critterY = _.partial(objYHeight, 30);
-    var playerY = _.partial(objYHeight, 30);
-    
-    var objXWidth = function(width, obj){
-        return obj.position-width/2;
-    };
-    var holeX = _.partial(objXWidth, 32);
-    var critterX = _.partial(objXWidth, critterWidth);
-    var playerX = _.partial(objXWidth, playerWidth);
-    
-    
+    var renderer = createDOMRenderer(_, $, window);
+    renderer.init(gameState);
     generateLevel(gameState);
+    renderer.initLevel(gameState);
     setupInteraction();
     var last = timestamp();
-    var rafID = window.requestAnimationFrame(gameTick);    
+    var rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameState));
     
     
-})(_, jQuery);
+})(_, jQuery, window);
+
+
+
+
+

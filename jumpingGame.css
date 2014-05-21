@@ -39,10 +39,10 @@
     left: 0;
     height: 400px;
     width: 320px;
-    background-color: green;
+    background-color: white;
 }
 
-.floor{
+.ceiling{
     background-color: black;
     position: absolute;
     height: 10px;
@@ -63,24 +63,25 @@
     position: absolute;
 }
 
-#player{
+.player{
     background-color: gray;
     width: 16px;
     height: 30px;
     position: absolute;
+    z-index:50;
 }
-#player.jumping{
+.player.jumping{
     height: 40px;
     width: 12px;
 }
-#player.falling{
+.player.falling{
     height: 40px;
     width: 12px;
 }
-#player.stunned{
+.player.stunned{
     height: 16px;
     width: 30px;
-    background-color: #555;
+    background-color: yellow;
 }
 
 
