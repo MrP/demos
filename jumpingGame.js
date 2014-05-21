@@ -107,6 +107,10 @@
             gameState.player.jumpingFor = maxZero(gameState.player.jumpingFor-dt);
             if(gameState.player.jumpingFor===0){
                 gameState.player.row +=1;
+                if(gameState.player.row>gameState.maxRow){
+                    gameState.maxRow = gameState.player.row;
+                    gameState.holes.push(gameState.generateHole());
+                }
                 // level up
                 if(gameState.player.row>=gameState.numRows){
                     gameState.level +=1;
@@ -118,7 +122,7 @@
                 generateLevel(gameState);
             } else if(between(gameState.player.jumpingFor, 0.6, 0.8) && !gameState.holes.filter(sameRowPlayer).some(collidesPlayer)){
                 //check collision against ceiling
-                gameState.player.stunnedFor += 3;
+                gameState.player.stunnedFor = 3;
                 gameState.player.fallingFor = 1-gameState.player.jumpingFor;
                 gameState.player.jumpingFor = 0;
             }
@@ -130,12 +134,12 @@
             move(gameState.player);
         }
         if(canFall(gameState.player) && gameState.holes.filter(previousRowPlayer).some(collidesPlayer)){
-            gameState.player.fallingFor = 1;
             gameState.player.row -=1;
+            gameState.player.fallingFor = 1;
             return;
         }
         if(canBeBitten(gameState.player) && gameState.critters.filter(sameRowPlayer).some(collidesPlayer)){
-            gameState.player.stunnedFor += 3;
+            gameState.player.stunnedFor = 2;
             gameState.player.speed = 0;
             return;
         }
@@ -163,12 +167,12 @@
     };
     var leftInteraction = function(player){
         if(canMove(player)){
-            player.speed = -1;
+            player.speed = -2;
         }
     };
     var rightInteraction = function(player){
         if(canMove(player)){
-            player.speed = 1;
+            player.speed = 2;
         }
     };
     var jumpInteraction = function(player){
@@ -213,8 +217,4 @@
     
     
 })(_, jQuery, window);
-
-
-
-
 
