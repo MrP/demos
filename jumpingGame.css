@@ -39,10 +39,10 @@
     left: 0;
     height: 400px;
     width: 320px;
-    background-color: green;
+    background-color: white;
 }
 
-.floor{
+.ceiling{
     background-color: black;
     position: absolute;
     height: 10px;
@@ -63,24 +63,31 @@
     position: absolute;
 }
 
-#player{
-    background-color: gray;
-    width: 16px;
+.player{
+    width: 20px;
     height: 30px;
     position: absolute;
+    z-index:50;
+    background-image: url('spritesheet_3_tr.png');
+    background-position: -10px -6px;
 }
-#player.jumping{
-    height: 40px;
-    width: 12px;
+.player.jumping{
+    background-position: -120px -222px;
 }
-#player.falling{
-    height: 40px;
-    width: 12px;
+.player.falling{
+    background-position: -120px -222px;
 }
-#player.stunned{
-    height: 16px;
-    width: 30px;
-    background-color: #555;
+.player.stunned{
+    background-position: -152px -222px;
+}
+.player.falling.stunned{
+    background-position: -6px -334px;
+}
+.player.left{
+    background-position: -45px -222px;
+}
+.player.right{
+    background-position: -79px -222px;
 }
 
 
