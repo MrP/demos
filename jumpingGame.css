@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #canvas{
     position: absolute;
     top: 0;
@@ -69,26 +68,26 @@
     height: 30px;
     position: absolute;
     z-index:50;
-    background-image: url('spritesheet_3_tr.png');
-    background-position: -10px -6px;
+    background-image: url('spritesheet_3_tr_2.png');
+    background-position: 0px 0px;
 }
 .player.jumping{
-    background-position: -120px -222px;
+    background-position: -70px -30px;
 }
 .player.falling{
-    background-position: -120px -222px;
+    background-position: -175px -30px;
 }
 .player.stunned{
-    background-position: -152px -222px;
+    background-position: -105px -30px;
 }
 .player.falling.stunned{
-    background-position: -6px -334px;
+    background-position: -140px -30px;
 }
 .player.left{
-    background-position: -45px -222px;
+    background-position: -220px -30px;
 }
 .player.right{
-    background-position: -79px -222px;
+    background-position: -35px -30px;
 }
 
 
