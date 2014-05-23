@@ -7,7 +7,7 @@
         level: 0,
         livesLeft: 3,
         player: {
-            width: 16,
+            width: 35,
             height: 30,
             row:0,
             position:160,
@@ -32,7 +32,7 @@
         };
         gameState.generateCritter = function(){
             var critter = generateMovingObjectInBalancedRow();
-            critter.width = 16;
+            critter.width = 35;
             critter.height = 30;
             return critter;
         };
