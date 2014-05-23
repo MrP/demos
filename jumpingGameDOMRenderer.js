@@ -34,8 +34,16 @@ var createDOMRenderer = function(_, $, window){
         $gameDiv.find(".critter").remove();
         $gameDiv.find(".player").remove();
         gameState.player.$element = null;
+        gameState.holes.forEach(_.partial(createElementIfNeeded, 'hole'));
+        gameState.critters.forEach(_.partial(createElementIfNeeded, 'critter'));
+        gameState.critters.forEach(setDirectionClass);
+        createElementIfNeeded('player', gameState.player);
     };
     
+    var setDirectionClass = function(obj){
+        obj.$element.toggleClass('left', obj.speed<0);
+        obj.$element.toggleClass('right', obj.speed>0);
+    };
     
     return {
         init: function(gameState){
@@ -60,8 +68,6 @@ var createDOMRenderer = function(_, $, window){
                 initLevel(gameState);
             }
             gameState.holes.forEach(_.partial(createElementIfNeeded, 'hole'));
-            gameState.critters.forEach(_.partial(createElementIfNeeded, 'critter'));
-            createElementIfNeeded('player', gameState.player);
             var pos = _.partial(position, gameState);
             gameState.holes.forEach(pos);
             gameState.critters.forEach(pos);
@@ -75,8 +81,7 @@ var createDOMRenderer = function(_, $, window){
             if(gameState.player.fallingFor>0){
                 addToTop(-gameState.rowHeight*Math.pow(gameState.player.fallingFor, 0.7), gameState.player);
             }
-            gameState.player.$element.toggleClass('right', gameState.player.speed>0);
-            gameState.player.$element.toggleClass('left', gameState.player.speed<0);
+            setDirectionClass(gameState.player);
         }
     };
 };

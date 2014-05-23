@@ -136,6 +136,7 @@
         if(canFall(gameState.player) && gameState.holes.filter(previousRowPlayer).some(collidesPlayer)){
             gameState.player.row -=1;
             gameState.player.fallingFor = 1;
+            gameState.player.speed = 0;
             return;
         }
         if(canBeBitten(gameState.player) && gameState.critters.filter(sameRowPlayer).some(collidesPlayer)){

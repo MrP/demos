@@ -57,10 +57,14 @@
     position: absolute;
 }
 .critter{
-    background-color: red;
-    width: 16px;
+    width: 35px;
     height: 30px;
     position: absolute;
+    background-image: url('monster.png');
+    background-position: 0px 0px;
+}
+.critter.left{
+    background-position: 0px -30px;
 }
 
 .player{
