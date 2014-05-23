@@ -76,6 +76,7 @@ var createDOMRenderer = function(_, $, window){
             gameState.player.$element.toggleClass('jumping', gameState.player.jumpingFor>0);
             gameState.player.$element.toggleClass('falling', gameState.player.fallingFor>0);
             gameState.player.$element.toggleClass('running', gameState.player.speed!==0);
+            gameState.player.$element.toggleClass('animated', gameState.player.speed!==0);
             if(gameState.player.jumpingFor>0){
                 addToTop(-gameState.rowHeight*Math.pow(1-gameState.player.jumpingFor, 0.7), gameState.player);
             }
