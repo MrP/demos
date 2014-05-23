@@ -77,19 +77,23 @@
     height: 30px;
     position: absolute;
     z-index:50;
-    background-image: url('spritesheet_3_tr_2.png');
+    background-image: url('standing.png');
     background-position: 0px 0px;
 }
 .player.jumping{
+    background-image: url('spritesheet_3_tr_2.png');
     background-position: -70px -30px;
 }
 .player.falling{
+    background-image: url('spritesheet_3_tr_2.png');
     background-position: -175px -30px;
 }
 .player.stunned{
+    background-image: url('spritesheet_3_tr_2.png');
     background-position: -105px -30px;
 }
 .player.falling.stunned{
+    background-image: url('spritesheet_3_tr_2.png');
     background-position: -140px -30px;
 }
 .player.running{

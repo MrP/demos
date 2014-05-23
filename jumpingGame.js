@@ -39,7 +39,7 @@
         for(var i=0;i<gameState.numRows+gameState.level;i+=1){
             gameState.holes.push(gameState.generateHole());
         }
-        for(i=0;i<gameState.level+4;i+=1){
+        for(i=0;i<gameState.level;i+=1){
             gameState.critters.push(gameState.generateCritter());
         }
         gameState.player.jumpingFor = 0;
