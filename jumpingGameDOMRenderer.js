@@ -35,7 +35,7 @@ var createDOMRenderer = function(_, $, window){
         $gameDiv.find(".player").remove();
         gameState.player.$element = null;
         gameState.holes.forEach(_.partial(createElementIfNeeded, 'hole'));
-        gameState.critters.forEach(_.partial(createElementIfNeeded, 'critter'));
+        gameState.critters.forEach(_.partial(createElementIfNeeded, 'critter animated'));
         gameState.critters.forEach(setDirectionClass);
         createElementIfNeeded('player', gameState.player);
     };
@@ -75,6 +75,7 @@ var createDOMRenderer = function(_, $, window){
             gameState.player.$element.toggleClass('stunned', gameState.player.stunnedFor>0);
             gameState.player.$element.toggleClass('jumping', gameState.player.jumpingFor>0);
             gameState.player.$element.toggleClass('falling', gameState.player.fallingFor>0);
+            gameState.player.$element.toggleClass('running', gameState.player.speed!==0);
             if(gameState.player.jumpingFor>0){
                 addToTop(-gameState.rowHeight*Math.pow(1-gameState.player.jumpingFor, 0.7), gameState.player);
             }
