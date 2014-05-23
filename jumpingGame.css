@@ -77,7 +77,7 @@
     height: 30px;
     position: absolute;
     z-index:50;
-    background-image: url('standing.png');
+    background-image: url('standing-turning.png');
     background-position: 0px 0px;
 }
 .player.jumping{
