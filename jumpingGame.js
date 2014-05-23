@@ -34,6 +34,7 @@
             var critter = generateMovingObjectInBalancedRow();
             critter.width = 35;
             critter.height = 30;
+            critter.speed *= 1.3;
             return critter;
         };
         for(var i=0;i<gameState.numRows+gameState.level;i+=1){
