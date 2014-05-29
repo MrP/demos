@@ -21,17 +21,37 @@
         critters: [],
         rowHeight: 64
     };
+    
+    var holeMakesLevelUnsolvable = function(gameState, hole){
+        var holesAbove = gameState.holes.filter(function(h){return h.row===hole.row+1;});
+        if(holesAbove.length===1 && holesAbove[0].speed===hole.speed) {
+            if(between(holesAbove[0].position, hole.position+hole.width*hole.speed*0.25, hole.position+hole.width*hole.speed*0.75)){
+                return true;
+            }
+        }
+        var holesBelow = gameState.holes.filter(function(h){return h.row===hole.row-1;});
+        if(holesBelow.length===1 && holesBelow[0].speed===hole.speed){
+            if(between(holesBelow[0].position, hole.position-hole.width*hole.speed*0.25, hole.position-hole.width*hole.speed*0.75)){
+                return true;
+            }
+        }
+        return false;
+    };
+    
     var generateLevel = function(gameState){
         gameState.holes = [];
         gameState.critters = [];
         gameState.generateHole = function(){
-            var hole = generateMovingObjectInBalancedRow();
+            var hole = generateMovingObjectForHoleInBalancedRow();
             hole.width = 32;
             hole.height = 64;
-            return hole;
+            if (!holeMakesLevelUnsolvable(gameState, hole)) {
+                return hole;
+            }
+            return gameState.generateHole();
         };
         gameState.generateCritter = function(){
-            var critter = generateMovingObjectInBalancedRow();
+            var critter = generateMovingObjectForCritterInBalancedRow();
             critter.width = 35;
             critter.height = 30;
             critter.speed *= 1.3;
@@ -83,7 +103,8 @@
         };
         return ret;
     };
-    var generateMovingObjectInBalancedRow = _.partial(generateMovingObject, getRandomRowBalancedGenerator());
+    var generateMovingObjectForHoleInBalancedRow = _.partial(generateMovingObject, getRandomRowBalancedGenerator());
+    var generateMovingObjectForCritterInBalancedRow = _.partial(generateMovingObject, getRandomRowBalancedGenerator());
     var timestamp = function() {
         return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
     };
@@ -153,7 +174,13 @@
         return player.row-1 === obj.row;
     };
     var between = function(num, left, right){
-        return num>left && num<right;
+        if (left<right){
+            return num>left && num<right;
+        } else if (left>right){
+            return num<left && num>right;
+        } else {
+            return num===left;
+        }
     };
     var collides = function(player, obj){
         return between(player.position, obj.position - obj.width/2, obj.position + obj.width/2);
