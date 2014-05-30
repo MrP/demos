@@ -226,6 +226,41 @@
         $(window).on("keyup", function(key){
             stopInteraction(gameState.player);
         });
+        
+        var pos = {x:0,y:0};
+        $(window).on("toucstart", function(event){
+            var e = event.originalEvent;
+            if(e.touches.length===1){
+                pos.x = e.touches[0].pageX;
+                pos.y = e.touches[0].pageY;
+            }
+            event.preventDefault();
+        });
+        $(window).on("touchmove", function(event){
+            var e = event.originalEvent;
+            var deltaX = e.touches[0].pageX-pos.x;
+            var deltaY = e.touches[0].pageY-pos.y;
+            if(deltaX>5){
+                rightInteraction(gameState.player);
+            } else if(deltaX<-5){
+                leftInteraction(gameState.player);
+            }
+            if(deltaY<-25){
+                jumpInteraction(gameState.player);
+            }
+            pos.x = e.touches[0].pageX;
+            pos.y = e.touches[0].pageY;
+
+            event.preventDefault();
+        });
+        $(window).on("touchend", function(event){
+            var e = event.originalEvent;
+            if(e.touches.length===0){
+                stopInteraction(gameState.player);
+            }
+            e.preventDefault();
+        });
+        
     };
     
     var gameTick = function(renderer, gameState, now) {
