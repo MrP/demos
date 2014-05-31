@@ -6,7 +6,7 @@
         height: 400,
         level: 0,
         player: {
-            width: 10,
+            width: 1,
             height: 30,
             row:0,
             position:50,

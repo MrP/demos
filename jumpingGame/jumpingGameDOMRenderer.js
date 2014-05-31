@@ -1,9 +1,9 @@
 var createDOMRenderer = function(_, $, window){
     var $gameDiv = $("#game");
     var lastLevel;
-    var percentToPixels = function(percent){
-        return 3.2*percent;
-    };
+    var playerElementWidth = 10.9375;
+    var critterElementWidth = 10.9375;
+    var holeElementWidth = 10;
 
     var addToTop = function(yToAdd, obj){
         return obj.$element.css("top", ""+(parseInt(obj.$element.css("top").replace(/px|%/,""), 10) + yToAdd)+"px");
@@ -16,12 +16,12 @@ var createDOMRenderer = function(_, $, window){
         return rowY(gameState, obj.row)+(gameState.rowHeight-obj.height);
     };
 
-    var objX = function(gameState, obj){
-        return obj.position-obj.width/2;
+    var objX = function(gameState, width, obj){
+        return obj.position-width/2;
     };
 
-    var position = function(gameState, obj){
-        obj.$element.css({top:""+objY(gameState, obj)+"px", left:""+objX(gameState, obj)+"%"});
+    var position = function(gameState, width, obj){
+        obj.$element.css({top:""+objY(gameState, obj)+"px", left:""+objX(gameState, width, obj)+"%"});
     };
 
     var createElementIfNeeded = function(className, obj){
@@ -71,10 +71,12 @@ var createDOMRenderer = function(_, $, window){
                 initLevel(gameState);
             }
             gameState.holes.forEach(_.partial(createElementIfNeeded, 'hole'));
-            var pos = _.partial(position, gameState);
-            gameState.holes.forEach(pos);
-            gameState.critters.forEach(pos);
-            pos(gameState.player);
+            var posPlayer = _.partial(position, gameState, playerElementWidth);
+            var posCritter = _.partial(position, gameState, critterElementWidth);
+            var posHole = _.partial(position, gameState, holeElementWidth);
+            gameState.holes.forEach(posHole);
+            gameState.critters.forEach(posCritter);
+            posPlayer(gameState.player);
             gameState.player.$element.toggleClass('stunned', gameState.player.stunnedFor>0);
             gameState.player.$element.toggleClass('jumping', gameState.player.jumpingFor>0);
             gameState.player.$element.toggleClass('falling', gameState.player.fallingFor>0);
