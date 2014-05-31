@@ -1,14 +1,14 @@
 var createDOMRenderer = function(_, $, window){
     var $gameDiv = $("#game");
     var lastLevel;
-    
+
     var addToTop = function(yToAdd, obj){
         return obj.$element.css("top", ""+(parseInt(obj.$element.css("top").replace(/px/,""), 10) + yToAdd)+"px");
     };
     var rowY = function(gameState, row){
         return (gameState.numRows-row-1)*gameState.rowHeight;
     };
-    
+
     var objY = function(gameState, obj){
         return rowY(gameState, obj.row)+(gameState.rowHeight-obj.height);
     };
@@ -20,7 +20,7 @@ var createDOMRenderer = function(_, $, window){
     var position = function(gameState, obj){
         obj.$element.css({top:""+objY(gameState, obj)+"px", left:""+objX(gameState, obj)+"px"});
     };
-    
+
     var createElementIfNeeded = function(className, obj){
         if(!obj.$element){
             obj.$element = $('<div class="'+className+'"></div>');
@@ -39,12 +39,12 @@ var createDOMRenderer = function(_, $, window){
         gameState.critters.forEach(setDirectionClass);
         createElementIfNeeded('player', gameState.player);
     };
-    
+
     var setDirectionClass = function(obj){
         obj.$element.toggleClass('left', obj.speed<0);
         obj.$element.toggleClass('right', obj.speed>0);
     };
-    
+
     return {
         init: function(gameState){
             if($gameDiv.length===0){

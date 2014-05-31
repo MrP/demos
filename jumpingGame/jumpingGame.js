@@ -21,7 +21,7 @@
         critters: [],
         rowHeight: 64
     };
-    
+
     var holeMakesLevelUnsolvable = function(gameState, hole){
         var holesAbove = gameState.holes.filter(function(h){return h.row===hole.row+1;});
         if(holesAbove.length===1 && holesAbove[0].speed===hole.speed) {
@@ -38,7 +38,7 @@
         }
         return false;
     };
-    
+
     var generateHole = function(gameState){
         var hole = generateMovingObject(generateRandomBalancedRow(gameState.holes));
         hole.width = 32;
@@ -57,7 +57,7 @@
         critter.speed *= 1.3;
         return critter;
     };
-    
+
     var generateLevel = function(gameState){
         gameState.holes = [];
         gameState.critters = [];
@@ -81,7 +81,7 @@
             speed: randomSign()
         };
     };
-    
+
     var generateRandomBalancedRow = function(currentObjects){
         var rows = _.pluck(currentObjects, 'row');
         var rowCounts = rows.reduce(function(memo, row){
@@ -100,7 +100,7 @@
         }, []);
         var index = rand(indexesWithZero.length);
         var row = indexesWithZero[index];
-            
+
         return row;
     };
     var rand = function(max){
@@ -132,13 +132,13 @@
     var timestamp = function() {
         return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
     };
-    
+
     var moveObject = function(dt, obj){
         obj.position = (obj.position + gameState.speed * obj.speed * dt + gameState.width)%gameState.width;
     };
-    
+
     var maxZero = _.partial(Math.max, 0);
-    
+
     var updateGameState = function(gameState, dt){
         var move = _.partial(moveObject, dt);
         var sameRowPlayer = _.partial(sameRow, gameState.player);
@@ -250,7 +250,7 @@
         $(window).on("keyup", function(key){
             stopInteraction(gameState.player);
         });
-        
+
         var pos = {x:0,y:0};
         var timeTapStart = 0;
         $(window).on("touchstart", function(event){
@@ -290,9 +290,9 @@
             }
             e.preventDefault();
         });
-        
+
     };
-    
+
     var gameTick = function(renderer, gameState, now) {
       var dt = Math.min(1, (now - last) / 1000);
       updateGameState(gameState, dt);
@@ -300,7 +300,7 @@
       last = now;
       rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameState));
     };
-    
+
     var renderer = createDOMRenderer(_, $, window);
     renderer.init(gameState);
     generateLevel(gameState);
@@ -308,7 +308,7 @@
     setupInteraction(gameState);
     var last = timestamp();
     var rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameState));
-    
-    
+
+
 })(_, jQuery, window);
 
