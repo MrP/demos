@@ -237,7 +237,7 @@
     var stopInteraction = function(player){
         player.speed = 0;
     };
-    var setupInteraction = function(){
+    var setupInteraction = function(gameState){
         $(window).on("keydown", function(event){
             if(event.which===37){
                 leftInteraction(gameState.player);
@@ -253,7 +253,7 @@
         
         var pos = {x:0,y:0};
         var timeTapStart = 0;
-        $(window).on("toucstart", function(event){
+        $(window).on("touchstart", function(event){
             var e = event.originalEvent;
             if(e.touches.length===1){
                 pos.x = e.touches[0].pageX;
@@ -271,7 +271,7 @@
             } else if(deltaX<-5){
                 leftInteraction(gameState.player);
             }
-            if(deltaY<-40){
+            if(deltaY<-30){
                 jumpInteraction(gameState.player);
             }
             pos.x = e.touches[0].pageX;
@@ -282,7 +282,7 @@
         $(window).on("touchend", function(event){
             var e = event.originalEvent;
             if(e.touches.length===0){
-                if(timestamp()-timeTapStart<50){
+                if(timestamp()-timeTapStart<100){
                     jumpInteraction(gameState.player);
                 }else{
                     stopInteraction(gameState.player);
@@ -305,7 +305,7 @@
     renderer.init(gameState);
     generateLevel(gameState);
     renderer.initLevel(gameState);
-    setupInteraction();
+    setupInteraction(gameState);
     var last = timestamp();
     var rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameState));
     
