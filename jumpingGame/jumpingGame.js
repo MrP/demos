@@ -3,11 +3,9 @@
         speed: 16,
         numRows: 6,
         width: 100,
-        height: 400,
         level: 0,
         player: {
-            width: 1,
-            height: 30,
+            width: 10,
             row:0,
             position:50,
             jumpingFor: 0,
@@ -17,8 +15,7 @@
         },
         maxRow:0,
         holes: [],
-        critters: [],
-        rowHeight: 64
+        critters: []
     };
 
     var holeMakesLevelUnsolvable = function(gameState, hole){
@@ -41,7 +38,6 @@
     var generateHole = function(gameState){
         var hole = generateMovingObject(generateRandomBalancedRow(gameState.holes));
         hole.width = 10;
-        hole.height = 64;
         while (holeMakesLevelUnsolvable(gameState, hole)) {
             var obj = generateMovingObject(hole.row);
             hole.position = obj.position;
@@ -52,7 +48,6 @@
     var generateCritter = function(gameState){
         var critter = generateMovingObject(generateRandomBalancedRow(gameState.critters));
         critter.width = 10;
-        critter.height = 30;
         critter.speed *= 1.3;
         return critter;
     };

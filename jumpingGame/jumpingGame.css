@@ -37,22 +37,23 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 400px;
-    width: 320px;
+    height: 100%;
+    width: 100%;
     background-color: white;
+    overflow: hidden;
 }
 
 .ceiling{
     background-color: black;
     position: absolute;
     height: 10px;
-    width: 320px;
     left: 0;
+    right: 0;
 }
 
 .hole{
     background-color: white;
-    width: 32px;
+    width: 10%;
     height: 10px;
     position: absolute;
 }

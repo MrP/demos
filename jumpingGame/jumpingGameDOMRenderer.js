@@ -1,27 +1,30 @@
 var createDOMRenderer = function(_, $, window){
     var $gameDiv = $("#game");
     var lastLevel;
-    var playerElementWidth = 10.9375;
-    var critterElementWidth = 10.9375;
+    var playerElementWidth = 3500/$gameDiv.width();
+    var critterElementWidth = 3500/$gameDiv.width();
     var holeElementWidth = 10;
+    var rowHeight = 64;
+    var critterHeight = 30;
+    var playerHeight = 30;
 
     var addToTop = function(yToAdd, obj){
         return obj.$element.css("top", ""+(parseInt(obj.$element.css("top").replace(/px|%/,""), 10) + yToAdd)+"px");
     };
     var rowY = function(gameState, row){
-        return (gameState.numRows-row-1)*gameState.rowHeight;
+        return (gameState.numRows-row-1)*rowHeight;
     };
 
-    var objY = function(gameState, obj){
-        return rowY(gameState, obj.row)+(gameState.rowHeight-obj.height);
+    var objY = function(gameState, height, obj){
+        return rowY(gameState, obj.row)+(rowHeight-height);
     };
 
     var objX = function(gameState, width, obj){
         return obj.position-width/2;
     };
 
-    var position = function(gameState, width, obj){
-        obj.$element.css({top:""+objY(gameState, obj)+"px", left:""+objX(gameState, width, obj)+"%"});
+    var position = function(gameState, width, height, obj){
+        obj.$element.css({top:""+objY(gameState, height, obj)+"px", left:""+objX(gameState, width, obj)+"%"});
     };
 
     var createElementIfNeeded = function(className, obj){
@@ -59,7 +62,7 @@ var createDOMRenderer = function(_, $, window){
             for(var i=0;i<gameState.numRows;i++){
                 var $ceiling = $('<div class="ceiling"></div>');
                 $gameDiv.append($ceiling);
-                $ceiling.css("top", ""+(rowY(gameState, i)-gameState.rowHeight)+"px");
+                $ceiling.css("top", ""+(rowY(gameState, i)-rowHeight)+"px");
             }
             var $floor = $('<div class="ceiling"></div>');
             $gameDiv.append($floor);
@@ -71,9 +74,9 @@ var createDOMRenderer = function(_, $, window){
                 initLevel(gameState);
             }
             gameState.holes.forEach(_.partial(createElementIfNeeded, 'hole'));
-            var posPlayer = _.partial(position, gameState, playerElementWidth);
-            var posCritter = _.partial(position, gameState, critterElementWidth);
-            var posHole = _.partial(position, gameState, holeElementWidth);
+            var posPlayer = _.partial(position, gameState, playerElementWidth, playerHeight);
+            var posCritter = _.partial(position, gameState, critterElementWidth, critterHeight);
+            var posHole = _.partial(position, gameState, holeElementWidth, rowHeight);
             gameState.holes.forEach(posHole);
             gameState.critters.forEach(posCritter);
             posPlayer(gameState.player);
@@ -83,10 +86,10 @@ var createDOMRenderer = function(_, $, window){
             gameState.player.$element.toggleClass('running', gameState.player.speed!==0);
             gameState.player.$element.toggleClass('animated', gameState.player.stunnedFor===0 && gameState.player.jumpingFor===0 && gameState.player.fallingFor===0);
             if(gameState.player.jumpingFor>0){
-                addToTop(-gameState.rowHeight*Math.pow(1-gameState.player.jumpingFor, 0.7), gameState.player);
+                addToTop(-rowHeight*Math.pow(1-gameState.player.jumpingFor, 0.7), gameState.player);
             }
             if(gameState.player.fallingFor>0){
-                addToTop(-gameState.rowHeight*Math.pow(gameState.player.fallingFor, 0.7), gameState.player);
+                addToTop(-rowHeight*Math.pow(gameState.player.fallingFor, 0.7), gameState.player);
             }
             setDirectionClass(gameState.player);
         }
