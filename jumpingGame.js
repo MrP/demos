@@ -31,7 +31,7 @@
         }
         var holesBelow = gameState.holes.filter(function(h){return h.row===hole.row-1;});
         if(holesBelow.length===1 && holesBelow[0].speed===hole.speed){
-            if(between(holesBelow[0].position, hole.position-hole.width*hole.speed*0.25, hole.position-hole.width*hole.speed*0.75)){
+            if(between(holesBelow[0].position, hole.position-hole.width*hole.speed*0.25, hole.position-hole.width*hole.speed*1)){
                 return true;
             }
         }
@@ -45,10 +45,12 @@
             var hole = generateMovingObjectForHoleInBalancedRow();
             hole.width = 32;
             hole.height = 64;
-            if (!holeMakesLevelUnsolvable(gameState, hole)) {
-                return hole;
+            while (holeMakesLevelUnsolvable(gameState, hole)) {
+                var obj = generateMovingObject(_.constant(hole.row));
+                hole.position = obj.position;
+                hole.speed = obj.speed;
             }
-            return gameState.generateHole();
+            return hole;
         };
         gameState.generateCritter = function(){
             var critter = generateMovingObjectForCritterInBalancedRow();
@@ -57,10 +59,10 @@
             critter.speed *= 1.3;
             return critter;
         };
-        for(var i=0;i<gameState.numRows+gameState.level;i+=1){
+        for(var i=0;i<gameState.numRows+Math.floor(gameState.level/2);i+=1){
             gameState.holes.push(gameState.generateHole());
         }
-        for(i=0;i<gameState.level;i+=1){
+        for(i=0;i<Math.ceil(gameState.level/2);i+=1){
             gameState.critters.push(gameState.generateCritter());
         }
         gameState.player.jumpingFor = 0;
@@ -228,11 +230,13 @@
         });
         
         var pos = {x:0,y:0};
+        var timeTapStart = 0;
         $(window).on("toucstart", function(event){
             var e = event.originalEvent;
             if(e.touches.length===1){
                 pos.x = e.touches[0].pageX;
                 pos.y = e.touches[0].pageY;
+                timeTapStart = timestamp();
             }
             event.preventDefault();
         });
@@ -245,7 +249,7 @@
             } else if(deltaX<-5){
                 leftInteraction(gameState.player);
             }
-            if(deltaY<-25){
+            if(deltaY<-40){
                 jumpInteraction(gameState.player);
             }
             pos.x = e.touches[0].pageX;
@@ -256,7 +260,11 @@
         $(window).on("touchend", function(event){
             var e = event.originalEvent;
             if(e.touches.length===0){
-                stopInteraction(gameState.player);
+                if(timestamp()-timeTapStart<50){
+                    jumpInteraction(gameState.player);
+                }else{
+                    stopInteraction(gameState.player);
+                }
             }
             e.preventDefault();
         });
