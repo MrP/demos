@@ -1,10 +1,13 @@
 var createDOMRenderer = function(_, $, window){
     var $gameDiv = $("#game");
+    var $gameDivHeight = $gameDiv.height();
     var lastLevel;
     var playerElementWidth = 3500/$gameDiv.width();
     var critterElementWidth = 3500/$gameDiv.width();
     var holeElementWidth = 10;
-    var rowHeight = 64;
+    var rowHeight = function(gameState){
+        return $gameDivHeight/gameState.numRows;
+    };
     var critterHeight = 30;
     var playerHeight = 30;
 
@@ -12,11 +15,11 @@ var createDOMRenderer = function(_, $, window){
         return obj.$element.css("top", ""+(parseInt(obj.$element.css("top").replace(/px|%/,""), 10) + yToAdd)+"px");
     };
     var rowY = function(gameState, row){
-        return (gameState.numRows-row-1)*rowHeight;
+        return (gameState.numRows-row-1)*rowHeight(gameState);
     };
 
     var objY = function(gameState, height, obj){
-        return rowY(gameState, obj.row)+(rowHeight-height);
+        return rowY(gameState, obj.row)+(rowHeight(gameState)-height);
     };
 
     var objX = function(gameState, width, obj){
@@ -62,7 +65,7 @@ var createDOMRenderer = function(_, $, window){
             for(var i=0;i<gameState.numRows;i++){
                 var $ceiling = $('<div class="ceiling"></div>');
                 $gameDiv.append($ceiling);
-                $ceiling.css("top", ""+(rowY(gameState, i)-rowHeight)+"px");
+                $ceiling.css("top", ""+(rowY(gameState, i)-rowHeight(gameState))+"px");
             }
             var $floor = $('<div class="ceiling"></div>');
             $gameDiv.append($floor);
@@ -76,7 +79,7 @@ var createDOMRenderer = function(_, $, window){
             gameState.holes.forEach(_.partial(createElementIfNeeded, 'hole'));
             var posPlayer = _.partial(position, gameState, playerElementWidth, playerHeight);
             var posCritter = _.partial(position, gameState, critterElementWidth, critterHeight);
-            var posHole = _.partial(position, gameState, holeElementWidth, rowHeight);
+            var posHole = _.partial(position, gameState, holeElementWidth, rowHeight(gameState));
             gameState.holes.forEach(posHole);
             gameState.critters.forEach(posCritter);
             posPlayer(gameState.player);
@@ -86,10 +89,10 @@ var createDOMRenderer = function(_, $, window){
             gameState.player.$element.toggleClass('running', gameState.player.speed!==0);
             gameState.player.$element.toggleClass('animated', gameState.player.stunnedFor===0 && gameState.player.jumpingFor===0 && gameState.player.fallingFor===0);
             if(gameState.player.jumpingFor>0){
-                addToTop(-rowHeight*Math.pow(1-gameState.player.jumpingFor, 0.7), gameState.player);
+                addToTop(-rowHeight(gameState)*Math.pow(1-gameState.player.jumpingFor, 0.7), gameState.player);
             }
             if(gameState.player.fallingFor>0){
-                addToTop(-rowHeight*Math.pow(gameState.player.fallingFor, 0.7), gameState.player);
+                addToTop(-rowHeight(gameState)*Math.pow(gameState.player.fallingFor, 0.7), gameState.player);
             }
             setDirectionClass(gameState.player);
         }
