@@ -25,45 +25,47 @@
     var holeMakesLevelUnsolvable = function(gameState, hole){
         var holesAbove = gameState.holes.filter(function(h){return h.row===hole.row+1;});
         if(holesAbove.length===1 && holesAbove[0].speed===hole.speed) {
-            if(between(holesAbove[0].position, hole.position+hole.width*hole.speed*0.25, hole.position+hole.width*hole.speed*0.75)){
+            if(between(holesAbove[0].position, hole.position+hole.width*hole.speed*0.25, hole.position+hole.width*hole.speed*1)){
                 return true;
             }
         }
+        var holesRow = gameState.holes.filter(function(h){return h.row===hole.row;});
         var holesBelow = gameState.holes.filter(function(h){return h.row===hole.row-1;});
-        if(holesBelow.length===1 && holesBelow[0].speed===hole.speed){
-            if(between(holesBelow[0].position, hole.position-hole.width*hole.speed*0.25, hole.position-hole.width*hole.speed*1)){
-                return true;
-            }
+        if(holesRow.length===1){
+            return holesBelow.some(function(holeBelow){
+                return holeBelow.speed===hole.speed && between(holeBelow.position, hole.position-hole.width*hole.speed*0.25, hole.position-hole.width*hole.speed*1);
+            });
         }
         return false;
+    };
+    
+    var generateHole = function(gameState){
+        var hole = generateMovingObject(generateRandomBalancedRow(gameState.holes));
+        hole.width = 32;
+        hole.height = 64;
+        while (holeMakesLevelUnsolvable(gameState, hole)) {
+            var obj = generateMovingObject(hole.row);
+            hole.position = obj.position;
+            hole.speed = obj.speed;
+        }
+        return hole;
+    };
+    var generateCritter = function(gameState){
+        var critter = generateMovingObject(generateRandomBalancedRow(gameState.critters));
+        critter.width = 35;
+        critter.height = 30;
+        critter.speed *= 1.3;
+        return critter;
     };
     
     var generateLevel = function(gameState){
         gameState.holes = [];
         gameState.critters = [];
-        gameState.generateHole = function(){
-            var hole = generateMovingObjectForHoleInBalancedRow();
-            hole.width = 32;
-            hole.height = 64;
-            while (holeMakesLevelUnsolvable(gameState, hole)) {
-                var obj = generateMovingObject(_.constant(hole.row));
-                hole.position = obj.position;
-                hole.speed = obj.speed;
-            }
-            return hole;
-        };
-        gameState.generateCritter = function(){
-            var critter = generateMovingObjectForCritterInBalancedRow();
-            critter.width = 35;
-            critter.height = 30;
-            critter.speed *= 1.3;
-            return critter;
-        };
         for(var i=0;i<gameState.numRows+Math.floor(gameState.level/2);i+=1){
-            gameState.holes.push(gameState.generateHole());
+            gameState.holes.push(generateHole(gameState));
         }
         for(i=0;i<Math.ceil(gameState.level/2);i+=1){
-            gameState.critters.push(gameState.generateCritter());
+            gameState.critters.push(generateCritter(gameState));
         }
         gameState.player.jumpingFor = 0;
         gameState.player.fallingFor = 0;
@@ -72,12 +74,34 @@
         gameState.player.row = 0;
         gameState.maxRow = 0;
     };
-    var generateMovingObject = function(generateRowFunction){
+    var generateMovingObject = function(row){
         return {
-            row: generateRowFunction(),
+            row: row,
             position: randomPosition(),
             speed: randomSign()
         };
+    };
+    
+    var generateRandomBalancedRow = function(currentObjects){
+        var rows = _.pluck(currentObjects, 'row');
+        var rowCounts = rows.reduce(function(memo, row){
+            memo[row]++;
+            return memo;
+        }, _.times(gameState.numRows, _.constant(0)));
+        var minRowCount = _.min(rowCounts);
+        rowCounts = rowCounts.map(function(rowCount){
+            return rowCount-minRowCount;
+        });
+        var indexesWithZero = rowCounts.reduce(function(memo, count, index){
+            if(count===0){
+                memo.push(index);
+            }
+            return memo;
+        }, []);
+        var index = rand(indexesWithZero.length);
+        var row = indexesWithZero[index];
+            
+        return row;
     };
     var rand = function(max){
         return Math.floor(Math.random() * max);
@@ -86,7 +110,7 @@
     var randomSign = function(){
         return (rand(2)-0.5)*2;
     };
-    var getRandomRowBalancedGenerator = function(){
+    var getRandomRowBalancedGenerator = function(gameState){
         var exceptedRows = [];
         var ret = function(){
             var r = rand(gameState.numRows-exceptedRows.length);
@@ -105,8 +129,6 @@
         };
         return ret;
     };
-    var generateMovingObjectForHoleInBalancedRow = _.partial(generateMovingObject, getRandomRowBalancedGenerator());
-    var generateMovingObjectForCritterInBalancedRow = _.partial(generateMovingObject, getRandomRowBalancedGenerator());
     var timestamp = function() {
         return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
     };
@@ -133,7 +155,7 @@
                 gameState.player.row +=1;
                 if(gameState.player.row>gameState.maxRow){
                     gameState.maxRow = gameState.player.row;
-                    gameState.holes.push(gameState.generateHole());
+                    gameState.holes.push(generateHole(gameState));
                 }
                 // level up
                 if(gameState.player.row>=gameState.numRows){
