@@ -25,7 +25,7 @@
     var holeMakesLevelUnsolvable = function(gameState, hole){
         var holesAbove = gameState.holes.filter(function(h){return h.row===hole.row+1;});
         if(holesAbove.length===1 && holesAbove[0].speed===hole.speed) {
-            if(between(holesAbove[0].position, hole.position+hole.width*hole.speed*0.25, hole.position+hole.width*hole.speed*1)){
+            if(between(holesAbove[0].position, hole.position+hole.width*hole.speed*0.1, hole.position+hole.width*hole.speed*1)){
                 return true;
             }
         }
@@ -33,7 +33,7 @@
         var holesBelow = gameState.holes.filter(function(h){return h.row===hole.row-1;});
         if(holesRow.length===1){
             return holesBelow.some(function(holeBelow){
-                return holeBelow.speed===hole.speed && between(holeBelow.position, hole.position-hole.width*hole.speed*0.25, hole.position-hole.width*hole.speed*1);
+                return holeBelow.speed===hole.speed && between(holeBelow.position, hole.position-hole.width*hole.speed*0.1, hole.position-hole.width*hole.speed*1);
             });
         }
         return false;
