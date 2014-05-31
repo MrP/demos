@@ -1,9 +1,12 @@
 var createDOMRenderer = function(_, $, window){
     var $gameDiv = $("#game");
     var lastLevel;
+    var percentToPixels = function(percent){
+        return 3.2*percent;
+    };
 
     var addToTop = function(yToAdd, obj){
-        return obj.$element.css("top", ""+(parseInt(obj.$element.css("top").replace(/px/,""), 10) + yToAdd)+"px");
+        return obj.$element.css("top", ""+(parseInt(obj.$element.css("top").replace(/px|%/,""), 10) + yToAdd)+"px");
     };
     var rowY = function(gameState, row){
         return (gameState.numRows-row-1)*gameState.rowHeight;
@@ -18,7 +21,7 @@ var createDOMRenderer = function(_, $, window){
     };
 
     var position = function(gameState, obj){
-        obj.$element.css({top:""+objY(gameState, obj)+"px", left:""+objX(gameState, obj)+"px"});
+        obj.$element.css({top:""+objY(gameState, obj)+"px", left:""+objX(gameState, obj)+"%"});
     };
 
     var createElementIfNeeded = function(className, obj){
