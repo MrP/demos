@@ -118,6 +118,13 @@ var createDOMRenderer = function(_, $, window){
             if(lastLevel!==gameState.level){
                 initLevel(gameState);
             }
+            if(gameState.paused){
+                if($gameDiv.find('.paused').length===0){
+                    $gameDiv.append($('<div class="paused"></div>'));
+                }
+            } else {
+                $gameDiv.find('.paused').remove();
+            }
             gameState.holes.forEach(_.partial(createElementIfNeeded, 'hole'));
             var posPlayer = _.partial(position, gameState, playerElementWidth, playerHeight);
             var posCritter = _.partial(position, gameState, critterElementWidth, critterHeight);

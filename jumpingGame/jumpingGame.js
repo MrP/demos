@@ -1,6 +1,7 @@
 (function(_, $, window){
     // Game units are arbitrary, 100% width and 1 of height each row
     var gameState = {
+        paused: false,
         speed: 16,
         numRows: 5,
         width: 100,
@@ -21,13 +22,58 @@
         },
         maxRow:0,
         holes: [],
-        critters: []
+        critters: [],
+        between: function(num, left, right){
+            if (left<right){
+                return num>left && num<right || num+gameState.width>left && num+gameState.width<right;
+            } else if (left>right){
+                return num<left && num>right || num+gameState.width<left && num+gameState.width>right;
+            } else {
+                return num===left;
+            }
+        },
+        collides: function(gameState, player, obj){
+            var playerLeft = player.position-player.width/2;
+            var playerRight = player.position+player.width/2;
+            var objLeft = obj.position - obj.width/2;
+            var objRight = obj.position + obj.width/2;
+            return gameState.between(playerLeft, objLeft, objRight) || gameState.between(playerRight, objLeft, objRight) ||
+                gameState.between(objLeft, playerLeft, playerRight) || gameState.between(objRight, playerLeft, playerRight);
+        },
+        surrounds: function(gameState, player, obj){
+            var playerLeft = player.position-player.width/2;
+            var playerRight = player.position+player.width/2;
+            var objLeft = obj.position - obj.width/2;
+            var objRight = obj.position + obj.width/2;
+            return gameState.between(playerLeft, objLeft, objRight) && gameState.between(playerRight, objLeft, objRight);
+        },
+        moveObject: function(gameState, dt, obj){
+            obj.position = (obj.position + gameState.speed * obj.speed * dt + gameState.width)%gameState.width;
+        },
+        sameRow: function(player, obj){
+            return player.row === obj.row;
+        },
+        previousRow: function(player, obj){
+            return player.row-1 === obj.row;
+        },
+        canMove: function(player){
+            return player.stunnedFor===0 && !player.jumping && !player.falling;
+        },
+        canFall: function(player){
+            return !player.jumping && !player.falling && player.row > 0;
+        },
+        canBeBitten: function(player){
+            return !player.jumping && !player.falling;
+        },
+        timestamp: function() {
+            return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
+        }
     };
 
     var holeMakesLevelUnsolvable = function(gameState, hole){
         var holesAbove = gameState.holes.filter(function(h){return h.row===hole.row+1;});
         if(holesAbove.length===1 && holesAbove[0].speed===hole.speed) {
-            if(between(holesAbove[0].position, hole.position+hole.width*hole.speed*0.1, hole.position+hole.width*hole.speed*1)){
+            if(gameState.between(holesAbove[0].position, hole.position+hole.width*hole.speed*0.1, hole.position+hole.width*hole.speed*1)){
                 return true;
             }
         }
@@ -35,7 +81,7 @@
         var holesBelow = gameState.holes.filter(function(h){return h.row===hole.row-1;});
         if(holesRow.length===1){
             return holesBelow.some(function(holeBelow){
-                return holeBelow.speed===hole.speed && between(holeBelow.position, hole.position-hole.width*hole.speed*0.1, hole.position-hole.width*hole.speed*1);
+                return holeBelow.speed===hole.speed && gameState.between(holeBelow.position, hole.position-hole.width*hole.speed*0.1, hole.position-hole.width*hole.speed*1);
             });
         }
         return false;
@@ -61,7 +107,7 @@
     var generateLevel = function(gameState){
         gameState.holes = [];
         gameState.critters = [];
-        gameState.numRows = 5+Math.floor(gameState.level/5)
+        gameState.numRows = 5+Math.floor(gameState.level/5);
         _.times(gameState.numRows+Math.floor(gameState.level/2), function(){
             gameState.holes.push(generateHole(gameState));
         });
@@ -135,13 +181,7 @@
         };
         return ret;
     };
-    var timestamp = function() {
-        return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
-    };
-
-    var moveObject = function(dt, obj){
-        obj.position = (obj.position + gameState.speed * obj.speed * dt + gameState.width)%gameState.width;
-    };
+    
     var moveVertical = function(dt, obj){
         obj.verticalSpeed += gameState.gravity*dt;
         obj.verticalPosition = obj.verticalPosition + gameState.speed * obj.verticalSpeed * dt;
@@ -150,10 +190,10 @@
     var maxZero = _.partial(Math.max, 0);
 
     var updateGameState = function(gameState, dt){
-        var move = _.partial(moveObject, dt);
-        var sameRowPlayer = _.partial(sameRow, gameState.player);
-        var previousRowPlayer = _.partial(previousRow, gameState.player);
-        var collidesPlayer = _.partial(collides, gameState.player);
+        var move = _.partial(gameState.moveObject, gameState, dt);
+        var sameRowPlayer = _.partial(gameState.sameRow, gameState.player);
+        var previousRowPlayer = _.partial(gameState.previousRow, gameState.player);
+        var collidesPlayer = _.partial(gameState.collides, gameState, gameState.player);
         gameState.holes.forEach(move);
         gameState.critters.forEach(move);
         if(gameState.player.falling){
@@ -194,10 +234,10 @@
         if(gameState.player.stunnedFor){
             gameState.player.stunnedFor = maxZero(gameState.player.stunnedFor-dt);
         }
-        if(canMove(gameState.player)){
+        if(gameState.canMove(gameState.player)){
             move(gameState.player);
         }
-        if(canFall(gameState.player) && gameState.holes.filter(previousRowPlayer).some(_.partial(surrounds, gameState.player))){
+        if(gameState.canFall(gameState.player) && gameState.holes.filter(previousRowPlayer).some(_.partial(gameState.surrounds, gameState, gameState.player))){
             gameState.player.row -=1;
             gameState.player.falling = true;
             gameState.player.speed = 0;
@@ -205,156 +245,32 @@
             gameState.player.verticalPosition = -1;
             return;
         }
-        if(canBeBitten(gameState.player) && gameState.critters.filter(sameRowPlayer).some(collidesPlayer)){
+        if(gameState.canBeBitten(gameState.player) && gameState.critters.filter(sameRowPlayer).some(collidesPlayer)){
             gameState.player.stunnedFor = 2;
             gameState.player.speed = 0;
             return;
         }
     };
-    var sameRow = function(player, obj){
-        return player.row === obj.row;
-    };
-    var previousRow = function(player, obj){
-        return player.row-1 === obj.row;
-    };
-    var between = function(num, left, right){
-        if (left<right){
-            return num>left && num<right || num+gameState.width>left && num+gameState.width<right;
-        } else if (left>right){
-            return num<left && num>right || num+gameState.width<left && num+gameState.width>right;
-        } else {
-            return num===left;
-        }
-    };
-    var collides = function(player, obj){
-        var playerLeft = player.position-player.width/2;
-        var playerRight = player.position+player.width/2;
-        var objLeft = obj.position - obj.width/2;
-        var objRight = obj.position + obj.width/2;
-        return between(playerLeft, objLeft, objRight) || between(playerRight, objLeft, objRight) ||
-            between(objLeft, playerLeft, playerRight) || between(objRight, playerLeft, playerRight);
-    };
-    var surrounds = function(player, obj){
-        var playerLeft = player.position-player.width/2;
-        var playerRight = player.position+player.width/2;
-        var objLeft = obj.position - obj.width/2;
-        var objRight = obj.position + obj.width/2;
-        return between(playerLeft, objLeft, objRight) && between(playerRight, objLeft, objRight);
-    };
-    var canMove = function(player){
-        return player.stunnedFor===0 && !player.jumping && !player.falling;
-    };
-    var canFall = function(player){
-        return !player.jumping && !player.falling && player.row > 0;
-    };
-    var canBeBitten = function(player){
-        return !player.jumping && !player.falling;
-    };
-    var leftInteraction = function(player){
-        if(canMove(player)){
-            player.speed = -2;
-        }
-    };
-    var rightInteraction = function(player){
-        if(canMove(player)){
-            player.speed = 2;
-        }
-    };
-    var jumpInteraction = function(gameState){
-        if(canMove(gameState.player)){
-            gameState.player.speed = 0;
-            gameState.player.jumping = true;
-            gameState.player.verticalPosition = 0;
-            gameState.player.verticalSpeed = -0.2;
-            var a = gameState.gravity;
-            var b = gameState.player.verticalSpeed*gameState.speed;
-            var c = 1-gameState.player.height;
-            var timeJumpingToCeiling1 = (-b-Math.sqrt(b*b-4*a*c))/(2*a);
-            var timeJumpingToCeiling2 = (-b+Math.sqrt(b*b-4*a*c))/(2*a);
-            var timeJumpingToCeiling = Math.min(timeJumpingToCeiling1, timeJumpingToCeiling2);
-            var sameRowHoles = gameState.holes.filter(_.partial(sameRow, gameState.player));
-            sameRowHoles = _.map(sameRowHoles, _.clone);
-            sameRowHoles.forEach(_.partial(moveObject, timeJumpingToCeiling));
-            if(_.some(sameRowHoles, _.partial(collides, gameState.player))){
-                gameState.player.hittingHead = false;
-            }else{
-                gameState.player.hittingHead = true;
-            }
-        }
-    };
-    var stopInteraction = function(player){
-        player.speed = 0;
-    };
-    var setupInteraction = function(gameState){
-        $(window).on("keydown", function(event){
-            if(event.which===37){
-                leftInteraction(gameState.player);
-            }else if(event.which===39){
-                rightInteraction(gameState.player);
-            }else if(event.which===38){
-                jumpInteraction(gameState);
-            }
-        });
-        $(window).on("keyup", function(key){
-            stopInteraction(gameState.player);
-        });
-
-        var pos = {x:0,y:0};
-        var timeTapStart = 0;
-        $(window).on("touchstart", function(event){
-            var e = event.originalEvent;
-            if(e.touches.length===1){
-                pos.x = e.touches[0].pageX;
-                pos.y = e.touches[0].pageY;
-                timeTapStart = timestamp();
-            }
-            event.preventDefault();
-        });
-        $(window).on("touchmove", function(event){
-            var e = event.originalEvent;
-            var deltaX = e.touches[0].pageX-pos.x;
-            var deltaY = e.touches[0].pageY-pos.y;
-            if(deltaX>5){
-                rightInteraction(gameState.player);
-            } else if(deltaX<-5){
-                leftInteraction(gameState.player);
-            }
-            if(deltaY<-30){
-                jumpInteraction(gameState);
-            }
-            pos.x = e.touches[0].pageX;
-            pos.y = e.touches[0].pageY;
-
-            event.preventDefault();
-        });
-        $(window).on("touchend", function(event){
-            var e = event.originalEvent;
-            if(e.touches.length===0){
-                if(timestamp()-timeTapStart<100){
-                    jumpInteraction(gameState);
-                }else{
-                    stopInteraction(gameState.player);
-                }
-            }
-            e.preventDefault();
-        });
-
-    };
-
+    
     var gameTick = function(renderer, gameState, now) {
-      var dt = Math.min(1, (now - last) / 1000);
-      updateGameState(gameState, dt);
-      renderer.renderFrame(gameState, dt);
-      last = now;
-      rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameState));
+        var dt = (now - last) / 1000;
+        last = now;
+        if(dt>1){
+            gameState.paused = true;
+        }
+        if(!gameState.paused){
+            updateGameState(gameState, dt);
+        }
+        renderer.renderFrame(gameState, dt);
+        rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameState));
     };
 
     var renderer = createDOMRenderer(_, $, window);
     renderer.init(gameState);
     generateLevel(gameState);
     renderer.initLevel(gameState);
-    setupInteraction(gameState);
-    var last = timestamp();
+    setupInteraction(_, $, window, gameState);
+    var last = gameState.timestamp();
     var rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameState));
 
 
