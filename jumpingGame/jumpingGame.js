@@ -1,17 +1,23 @@
 (function(_, $, window){
+    // Game units are arbitrary, 100% width and 1 of height each row
     var gameState = {
         speed: 16,
         numRows: 6,
         width: 100,
         level: 0,
+        gravity: 0.2,
         player: {
-            width: 10,
+            width: 5,
+            height: 0.3, //relative to 1 being a row height, used to hit the ceiling
             row:0,
             position:50,
-            jumpingFor: 0,
-            fallingFor: 0,
+            speed:0,
+            jumping: false,
+            hittingHead: false,
+            falling: false,
             stunnedFor: 0,
-            speed:0
+            verticalPosition:0,
+            verticalSpeed: 0
         },
         maxRow:0,
         holes: [],
@@ -61,11 +67,13 @@
         for(i=0;i<Math.ceil(gameState.level/2);i+=1){
             gameState.critters.push(generateCritter(gameState));
         }
-        gameState.player.jumpingFor = 0;
-        gameState.player.fallingFor = 0;
+        gameState.player.jumping = false;
+        gameState.player.falling = false;
         gameState.player.stunnedFor = 0;
         gameState.player.speed = 0;
         gameState.player.row = 0;
+        gameState.playerverticalPosition = 0;
+        gameState.playerverticalSpeed = 0;
         gameState.maxRow = 0;
     };
     var generateMovingObject = function(row){
@@ -130,6 +138,10 @@
     var moveObject = function(dt, obj){
         obj.position = (obj.position + gameState.speed * obj.speed * dt + gameState.width)%gameState.width;
     };
+    var moveVertical = function(dt, obj){
+        obj.verticalSpeed += gameState.gravity*dt;
+        obj.verticalPosition = obj.verticalPosition + gameState.speed * obj.verticalSpeed * dt;
+    };
 
     var maxZero = _.partial(Math.max, 0);
 
@@ -140,13 +152,19 @@
         var collidesPlayer = _.partial(collides, gameState.player);
         gameState.holes.forEach(move);
         gameState.critters.forEach(move);
-        if(gameState.player.fallingFor > 0){
-            gameState.player.fallingFor = maxZero(gameState.player.fallingFor-dt);
+        if(gameState.player.falling){
+            moveVertical(dt, gameState.player);
+            if(gameState.player.verticalPosition>=0){
+                gameState.player.falling = false;
+            }
         }
-        if(gameState.player.jumpingFor > 0){
-            gameState.player.jumpingFor = maxZero(gameState.player.jumpingFor-dt);
-            if(gameState.player.jumpingFor===0){
+        if(gameState.player.jumping){
+            moveVertical(dt, gameState.player);
+            if(gameState.player.verticalPosition<=-1 && !gameState.player.hittingHead){
                 gameState.player.row +=1;
+                gameState.player.verticalPosition=0;
+                gameState.player.verticalSpeed=0;
+                gameState.player.jumping  = false;
                 if(gameState.player.row>gameState.maxRow){
                     gameState.maxRow = gameState.player.row;
                     gameState.holes.push(generateHole(gameState));
@@ -160,11 +178,13 @@
             if(gameState.player.row>=gameState.numRows){
                 gameState.level +=1;
                 generateLevel(gameState);
-            } else if(between(gameState.player.jumpingFor, 0.6, 0.8) && !gameState.holes.filter(sameRowPlayer).some(collidesPlayer)){
-                //check collision against ceiling
+            } else if(gameState.player.hittingHead && gameState.player.verticalPosition <= -(1-gameState.player.height)){
+                //Collision against ceiling
                 gameState.player.stunnedFor = 3;
-                gameState.player.fallingFor = 1-gameState.player.jumpingFor;
-                gameState.player.jumpingFor = 0;
+                gameState.player.falling = true;
+                gameState.player.jumping  = false;
+                gameState.player.verticalSpeed  = 0;
+                gameState.player.hittingHead = false;
             }
         }
         if(gameState.player.stunnedFor){
@@ -173,10 +193,12 @@
         if(canMove(gameState.player)){
             move(gameState.player);
         }
-        if(canFall(gameState.player) && gameState.holes.filter(previousRowPlayer).some(collidesPlayer)){
+        if(canFall(gameState.player) && gameState.holes.filter(previousRowPlayer).some(_.partial(sorrounds, gameState.player))){
             gameState.player.row -=1;
-            gameState.player.fallingFor = 1;
+            gameState.player.falling = true;
             gameState.player.speed = 0;
+            gameState.player.verticalSpeed = 0;
+            gameState.player.verticalPosition = -1;
             return;
         }
         if(canBeBitten(gameState.player) && gameState.critters.filter(sameRowPlayer).some(collidesPlayer)){
@@ -201,16 +223,28 @@
         }
     };
     var collides = function(player, obj){
-        return between(player.position, obj.position - obj.width/2, obj.position + obj.width/2);
+        var playerLeft = player.position-player.width/2;
+        var playerRight = player.position+player.width/2;
+        var objLeft = obj.position - obj.width/2;
+        var objRight = obj.position + obj.width/2;
+        return between(playerLeft, objLeft, objRight) || between(playerRight, objLeft, objRight) ||
+            between(objLeft, playerLeft, playerRight) || between(objRight, playerLeft, playerRight);
+    };
+    var sorrounds = function(player, obj){
+        var playerLeft = player.position-player.width/2;
+        var playerRight = player.position+player.width/2;
+        var objLeft = obj.position - obj.width/2;
+        var objRight = obj.position + obj.width/2;
+        return between(playerLeft, objLeft, objRight) && between(playerRight, objLeft, objRight);
     };
     var canMove = function(player){
-        return player.stunnedFor===0 && player.jumpingFor===0 && player.fallingFor===0;
+        return player.stunnedFor===0 && !player.jumping && !player.falling;
     };
     var canFall = function(player){
-        return player.jumpingFor===0 && player.fallingFor===0 && player.row > 0;
+        return !player.jumping && !player.falling && player.row > 0;
     };
     var canBeBitten = function(player){
-        return player.jumpingFor===0 && player.fallingFor===0;
+        return !player.jumping && !player.falling;
     };
     var leftInteraction = function(player){
         if(canMove(player)){
@@ -222,10 +256,26 @@
             player.speed = 2;
         }
     };
-    var jumpInteraction = function(player){
-        if(canMove(player)){
-            player.speed = 0;
-            player.jumpingFor = 1;
+    var jumpInteraction = function(gameState){
+        if(canMove(gameState.player)){
+            gameState.player.speed = 0;
+            gameState.player.jumping = true;
+            gameState.player.verticalPosition = 0;
+            gameState.player.verticalSpeed = -0.2;
+            var a = gameState.gravity;
+            var b = gameState.player.verticalSpeed*gameState.speed;
+            var c = 1-gameState.player.height;
+            var timeJumpingToCeiling1 = (-b-Math.sqrt(b*b-4*a*c))/(2*a);
+            var timeJumpingToCeiling2 = (-b+Math.sqrt(b*b-4*a*c))/(2*a);
+            var timeJumpingToCeiling = Math.min(timeJumpingToCeiling1, timeJumpingToCeiling2);
+            var sameRowHoles = gameState.holes.filter(_.partial(sameRow, gameState.player));
+            sameRowHoles = _.map(sameRowHoles, _.clone);
+            sameRowHoles.forEach(_.partial(moveObject, timeJumpingToCeiling));
+            if(_.some(sameRowHoles, _.partial(collides, gameState.player))){
+                gameState.player.hittingHead = false;
+            }else{
+                gameState.player.hittingHead = true;
+            }
         }
     };
     var stopInteraction = function(player){
@@ -238,7 +288,7 @@
             }else if(event.which===39){
                 rightInteraction(gameState.player);
             }else if(event.which===38){
-                jumpInteraction(gameState.player);
+                jumpInteraction(gameState);
             }
         });
         $(window).on("keyup", function(key){
@@ -266,7 +316,7 @@
                 leftInteraction(gameState.player);
             }
             if(deltaY<-30){
-                jumpInteraction(gameState.player);
+                jumpInteraction(gameState);
             }
             pos.x = e.touches[0].pageX;
             pos.y = e.touches[0].pageY;
@@ -277,7 +327,7 @@
             var e = event.originalEvent;
             if(e.touches.length===0){
                 if(timestamp()-timeTapStart<100){
-                    jumpInteraction(gameState.player);
+                    jumpInteraction(gameState);
                 }else{
                     stopInteraction(gameState.player);
                 }

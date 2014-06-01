@@ -10,6 +10,7 @@ var createDOMRenderer = function(_, $, window){
     };
     var critterHeight = 30;
     var playerHeight = 30;
+    
 
     var addToTop = function(yToAdd, obj){
         return obj.$element.css("top", ""+(parseInt(obj.$element.css("top").replace(/px|%/,""), 10) + yToAdd)+"px");
@@ -65,11 +66,8 @@ var createDOMRenderer = function(_, $, window){
             for(var i=0;i<gameState.numRows;i++){
                 var $ceiling = $('<div class="ceiling"></div>');
                 $gameDiv.append($ceiling);
-                $ceiling.css("top", ""+(rowY(gameState, i)-rowHeight(gameState))+"px");
+                $ceiling.css("top", ""+(rowY(gameState, i))+"px");
             }
-            var $floor = $('<div class="ceiling"></div>');
-            $gameDiv.append($floor);
-            $ceiling.css("top", ""+rowY(gameState, 0)+"px");
         },
         initLevel: initLevel,
         renderFrame: function(gameState, dt){
@@ -84,15 +82,15 @@ var createDOMRenderer = function(_, $, window){
             gameState.critters.forEach(posCritter);
             posPlayer(gameState.player);
             gameState.player.$element.toggleClass('stunned', gameState.player.stunnedFor>0);
-            gameState.player.$element.toggleClass('jumping', gameState.player.jumpingFor>0);
-            gameState.player.$element.toggleClass('falling', gameState.player.fallingFor>0);
+            gameState.player.$element.toggleClass('jumping', gameState.player.jumping);
+            gameState.player.$element.toggleClass('falling', gameState.player.falling);
             gameState.player.$element.toggleClass('running', gameState.player.speed!==0);
-            gameState.player.$element.toggleClass('animated', gameState.player.stunnedFor===0 && gameState.player.jumpingFor===0 && gameState.player.fallingFor===0);
-            if(gameState.player.jumpingFor>0){
-                addToTop(-rowHeight(gameState)*Math.pow(1-gameState.player.jumpingFor, 0.7), gameState.player);
+            gameState.player.$element.toggleClass('animated', gameState.player.stunnedFor===0 && !gameState.player.jumping && !gameState.player.falling);
+            if(gameState.player.jumping){
+                addToTop(rowHeight(gameState)*gameState.player.verticalPosition, gameState.player);
             }
-            if(gameState.player.fallingFor>0){
-                addToTop(-rowHeight(gameState)*Math.pow(gameState.player.fallingFor, 0.7), gameState.player);
+            if(gameState.player.falling){
+                addToTop(rowHeight(gameState)*gameState.player.verticalPosition, gameState.player);
             }
             setDirectionClass(gameState.player);
         }
