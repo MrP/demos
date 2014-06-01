@@ -2,12 +2,12 @@
     // Game units are arbitrary, 100% width and 1 of height each row
     var gameState = {
         speed: 16,
-        numRows: 6,
+        numRows: 5,
         width: 100,
         level: 0,
         gravity: 0.2,
         player: {
-            width: 5,
+            width: 4,
             height: 0.3, //relative to 1 being a row height, used to hit the ceiling
             row:0,
             position:50,
@@ -53,7 +53,7 @@
     };
     var generateCritter = function(gameState){
         var critter = generateMovingObject(generateRandomBalancedRow(gameState.critters));
-        critter.width = 10;
+        critter.width = 6;
         critter.speed *= 1.3;
         return critter;
     };
@@ -61,11 +61,15 @@
     var generateLevel = function(gameState){
         gameState.holes = [];
         gameState.critters = [];
-        for(var i=0;i<gameState.numRows+Math.floor(gameState.level/2);i+=1){
+        gameState.numRows = 5+Math.floor(gameState.level/5)
+        _.times(gameState.numRows+Math.floor(gameState.level/2), function(){
             gameState.holes.push(generateHole(gameState));
-        }
-        for(i=0;i<Math.ceil(gameState.level/2);i+=1){
+        });
+        _.times(Math.ceil(gameState.level/2), function(){
             gameState.critters.push(generateCritter(gameState));
+        });
+        while(gameState.critters.filter(function(critter){return critter.row===0;}).length>2){
+            gameState.critters.splice(gameState.critters.indexOf(gameState.critters.filter(function(critter){return critter.row===0;})[0]), 1);
         }
         gameState.player.jumping = false;
         gameState.player.falling = false;

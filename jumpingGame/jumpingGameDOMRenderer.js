@@ -79,6 +79,12 @@ var createDOMRenderer = function(_, $, window){
     
             
     var initLevel = function(gameState){
+        $gameDiv.html('');
+        _.times(gameState.numRows, function(i){
+            var $ceiling = $('<div class="ceiling"></div>');
+            $gameDiv.append($ceiling);
+            $ceiling.css("top", ""+(rowY(gameState, i))+"px");
+        });
         lastLevel = gameState.level;
         $gameDiv.find(".hole").remove();
         $gameDiv.find(".critter").remove();
@@ -103,13 +109,9 @@ var createDOMRenderer = function(_, $, window){
                 $(document.body).append($('<div id="game"></div>'));
                 $gameDiv = $("#game");
             }
-            $gameDiv.html("");
+            $gameDiv.css('transform-origin','top left');
+            $gameDiv.css('transform','scale(2,2)');
             lastLevel = 0;
-            for(var i=0;i<gameState.numRows;i++){
-                var $ceiling = $('<div class="ceiling"></div>');
-                $gameDiv.append($ceiling);
-                $ceiling.css("top", ""+(rowY(gameState, i))+"px");
-            }
         },
         initLevel: initLevel,
         renderFrame: function(gameState, dt){

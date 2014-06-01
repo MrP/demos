@@ -33,12 +33,25 @@
     right: 0;
 }
 
-#game{
+body{
     position: absolute;
     top: 0;
     left: 0;
     height: 100%;
     width: 100%;
+    background-color: white;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+
+#game{
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 320px;
+    width: 400px;
     background-color: white;
     overflow: hidden;
 }
