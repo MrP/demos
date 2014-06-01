@@ -193,7 +193,7 @@
         if(canMove(gameState.player)){
             move(gameState.player);
         }
-        if(canFall(gameState.player) && gameState.holes.filter(previousRowPlayer).some(_.partial(sorrounds, gameState.player))){
+        if(canFall(gameState.player) && gameState.holes.filter(previousRowPlayer).some(_.partial(surrounds, gameState.player))){
             gameState.player.row -=1;
             gameState.player.falling = true;
             gameState.player.speed = 0;
@@ -215,9 +215,9 @@
     };
     var between = function(num, left, right){
         if (left<right){
-            return num>left && num<right;
+            return num>left && num<right || num+gameState.width>left && num+gameState.width<right;
         } else if (left>right){
-            return num<left && num>right;
+            return num<left && num>right || num+gameState.width<left && num+gameState.width>right;
         } else {
             return num===left;
         }
@@ -230,7 +230,7 @@
         return between(playerLeft, objLeft, objRight) || between(playerRight, objLeft, objRight) ||
             between(objLeft, playerLeft, playerRight) || between(objRight, playerLeft, playerRight);
     };
-    var sorrounds = function(player, obj){
+    var surrounds = function(player, obj){
         var playerLeft = player.position-player.width/2;
         var playerRight = player.position+player.width/2;
         var objLeft = obj.position - obj.width/2;

@@ -13,7 +13,8 @@ var createDOMRenderer = function(_, $, window){
     
 
     var addToTop = function(yToAdd, obj){
-        return obj.$element.css("top", ""+(parseInt(obj.$element.css("top").replace(/px|%/,""), 10) + yToAdd)+"px");
+        obj.$element.css("top", ""+(parseInt(obj.$element.css("top").replace(/px|%/,""), 10) + yToAdd)+"px");
+        obj.$overflowElement.css("top", ""+(parseInt(obj.$overflowElement.css("top").replace(/px|%/,""), 10) + yToAdd)+"px");
     };
     var rowY = function(gameState, row){
         return (gameState.numRows-row-1)*rowHeight(gameState);
@@ -29,6 +30,19 @@ var createDOMRenderer = function(_, $, window){
 
     var position = function(gameState, width, height, obj){
         obj.$element.css({top:""+objY(gameState, height, obj)+"px", left:""+objX(gameState, width, obj)+"%"});
+        if(objectOverflowsLeft(gameState, width, obj)){
+            obj.$overflowElement.css({top:""+objY(gameState, height, obj)+"px", left:""+(objX(gameState, width, obj)+gameState.width)+"%"});
+        }else if(objectOverflowsRight(gameState, width, obj)){
+            obj.$overflowElement.css({top:""+objY(gameState, height, obj)+"px", left:""+(objX(gameState, width, obj)-gameState.width)+"%"});
+        }else{
+            obj.$overflowElement.css({top:""+objY(gameState, height, obj)+"px", left:"-"+gameState.width+"%"});
+        }
+    };
+    var objectOverflowsLeft = function(gameState, width, obj){
+        return obj.position-width/2<0;
+    };
+    var objectOverflowsRight = function(gameState, width, obj){
+        return obj.position+width/2>gameState.width;
     };
 
     var createElementIfNeeded = function(className, obj){
@@ -36,8 +50,34 @@ var createDOMRenderer = function(_, $, window){
             obj.$element = $('<div class="'+className+'"></div>');
             $gameDiv.append(obj.$element);
         }
+        if(!obj.$overflowElement){
+            obj.$overflowElement = $('<div class="'+className+' overflow"></div>');
+            $gameDiv.append(obj.$overflowElement);
+        }
     };
-
+    
+    var setStunnedClass = function(player){
+        player.$element.toggleClass('stunned', player.stunnedFor>0);
+        player.$overflowElement.toggleClass('stunned', player.stunnedFor>0);
+    };
+    var setJumpingClass = function(player){
+        player.$element.toggleClass('jumping', player.jumping);
+        player.$overflowElement.toggleClass('jumping', player.jumping);
+    };
+    var setFallingClass = function(player){
+        player.$element.toggleClass('falling', player.falling);
+        player.$overflowElement.toggleClass('falling', player.falling);
+    };
+    var setRunningClass = function(player){
+        player.$element.toggleClass('running', player.speed!==0);
+        player.$overflowElement.toggleClass('running', player.speed!==0);
+    };
+    var setAnimatedClass = function(player){
+        player.$element.toggleClass('animated', player.stunnedFor===0 && !player.jumping && !player.falling);
+        player.$overflowElement.toggleClass('animated', player.stunnedFor===0 && !player.jumping && !player.falling);
+    };
+    
+            
     var initLevel = function(gameState){
         lastLevel = gameState.level;
         $gameDiv.find(".hole").remove();
@@ -52,7 +92,9 @@ var createDOMRenderer = function(_, $, window){
 
     var setDirectionClass = function(obj){
         obj.$element.toggleClass('left', obj.speed<0);
+        obj.$overflowElement.toggleClass('left', obj.speed<0);
         obj.$element.toggleClass('right', obj.speed>0);
+        obj.$overflowElement.toggleClass('right', obj.speed>0);
     };
 
     return {
@@ -78,14 +120,15 @@ var createDOMRenderer = function(_, $, window){
             var posPlayer = _.partial(position, gameState, playerElementWidth, playerHeight);
             var posCritter = _.partial(position, gameState, critterElementWidth, critterHeight);
             var posHole = _.partial(position, gameState, holeElementWidth, rowHeight(gameState));
+            
             gameState.holes.forEach(posHole);
             gameState.critters.forEach(posCritter);
             posPlayer(gameState.player);
-            gameState.player.$element.toggleClass('stunned', gameState.player.stunnedFor>0);
-            gameState.player.$element.toggleClass('jumping', gameState.player.jumping);
-            gameState.player.$element.toggleClass('falling', gameState.player.falling);
-            gameState.player.$element.toggleClass('running', gameState.player.speed!==0);
-            gameState.player.$element.toggleClass('animated', gameState.player.stunnedFor===0 && !gameState.player.jumping && !gameState.player.falling);
+            setStunnedClass(gameState.player);
+            setJumpingClass(gameState.player);
+            setFallingClass(gameState.player);
+            setRunningClass(gameState.player);
+            setAnimatedClass(gameState.player);
             if(gameState.player.jumping){
                 addToTop(rowHeight(gameState)*gameState.player.verticalPosition, gameState.player);
             }
