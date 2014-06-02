@@ -35,11 +35,8 @@ var setupInteraction = function(_, $, window, gameState){
         player.speed = 0;
     };
     var setupInteraction = function(gameState){
-        $(window).on("touchend, touchmove, touchstart, keydown, keyup", function(){
-            gameState.paused = false;
-        });
-
         $(window).on("keydown", function(event){
+            gameState.paused = false;
             if(event.which===37){
                 leftInteraction(gameState.player);
             }else if(event.which===39){
@@ -49,12 +46,14 @@ var setupInteraction = function(_, $, window, gameState){
             }
         });
         $(window).on("keyup", function(key){
+            gameState.paused = false;
             stopInteraction(gameState.player);
         });
 
         var pos = {x:0,y:0};
         var timeTapStart = 0;
         $(window).on("touchstart", function(event){
+            gameState.paused = false;
             var e = event.originalEvent;
             if(e.touches.length===1){
                 pos.x = e.touches[0].pageX;
@@ -64,6 +63,7 @@ var setupInteraction = function(_, $, window, gameState){
             event.preventDefault();
         });
         $(window).on("touchmove", function(event){
+            gameState.paused = false;
             var e = event.originalEvent;
             var deltaX = e.touches[0].pageX-pos.x;
             var deltaY = e.touches[0].pageY-pos.y;
@@ -81,6 +81,7 @@ var setupInteraction = function(_, $, window, gameState){
             event.preventDefault();
         });
         $(window).on("touchend", function(event){
+            gameState.paused = false;
             var e = event.originalEvent;
             if(e.touches.length===0){
                 if(gameState.timestamp()-timeTapStart<100){
@@ -90,9 +91,6 @@ var setupInteraction = function(_, $, window, gameState){
                 }
             }
             e.preventDefault();
-        });
-        $(window).on("touchend, touchmove, touchstart, keydown, keyup", function(){
-            gameState.paused = false;
         });
     };
 
