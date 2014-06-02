@@ -92,6 +92,9 @@ var setupInteraction = function(_, $, window, gameState){
             }
             e.preventDefault();
         });
+        $(window).on('resize', function(){
+            gameState.paused = true;
+        });
     };
 
     setupInteraction(gameState);

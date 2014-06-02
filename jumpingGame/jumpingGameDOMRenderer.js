@@ -102,14 +102,27 @@ var createDOMRenderer = function(_, $, window){
         obj.$element.toggleClass('right', obj.speed>0);
         obj.$overflowElement.toggleClass('right', obj.speed>0);
     };
-
+    
+    var createImagePreloaderElementIfNeeded = function($el, className){
+        if($el.find('.'+className.split(/ /).join('.')+".imagePreloader").length===0){
+            var a = $('<div class="'+className+' imagePreloader"></div>')
+            $el.append(a);
+        }
+    };
+    
     return {
         init: function(gameState){
             if($gameDiv.length===0){
                 $(document.body).append($('<div id="game"></div>'));
                 $gameDiv = $("#game");
             }
-            $gameDiv.css('transform-origin','top left');
+            createImagePreloaderElementIfNeeded($gameDiv, 'player');
+            createImagePreloaderElementIfNeeded($gameDiv, 'player running');
+            createImagePreloaderElementIfNeeded($gameDiv, 'player jumping');
+            createImagePreloaderElementIfNeeded($gameDiv, 'player falling stunned');
+            createImagePreloaderElementIfNeeded($gameDiv, 'player stunned');
+            createImagePreloaderElementIfNeeded($gameDiv, 'player falling');
+            createImagePreloaderElementIfNeeded($gameDiv, 'critter');
             $gameDiv.css('transform','scale(2,2)');
             lastLevel = 0;
         },

@@ -272,6 +272,11 @@
     setupInteraction(_, $, window, gameState);
     var last = gameState.timestamp();
     var rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameState));
+    
+    $(window).on('resize', function(){
+        renderer.init(gameState);
+    });
+
 
 
 })(_, jQuery, window);
