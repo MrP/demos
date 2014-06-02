@@ -2,7 +2,7 @@
     // Game units are arbitrary, 100% width and 1 of height each row
     var gameState = {
         paused: false,
-        speed: 16,
+        speed: 20,
         numRows: 5,
         width: 100,
         level: 0,
@@ -18,7 +18,8 @@
             falling: false,
             stunnedFor: 0,
             verticalPosition:0,
-            verticalSpeed: 0
+            verticalSpeed: 0,
+            kickUpSpeed: -0.15
         },
         maxRow:0,
         holes: [],
