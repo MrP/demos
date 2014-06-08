@@ -1,4 +1,4 @@
-var createDOMRenderer = function(_, $, window){
+define(['underscore', 'jquery', 'jumpingGameUtil'], function(_, $, util){
     var $gameDiv = $("#game");
     var $gameDivHeight = $gameDiv.height();
     var lastLevel;
@@ -105,7 +105,7 @@ var createDOMRenderer = function(_, $, window){
     
     var createImagePreloaderElementIfNeeded = function($el, className){
         if($el.find('.'+className.split(/ /).join('.')+".imagePreloader").length===0){
-            var a = $('<div class="'+className+' imagePreloader"></div>')
+            var a = $('<div class="'+className+' imagePreloader"></div>');
             $el.append(a);
         }
     };
@@ -123,8 +123,13 @@ var createDOMRenderer = function(_, $, window){
             createImagePreloaderElementIfNeeded($gameDiv, 'player stunned');
             createImagePreloaderElementIfNeeded($gameDiv, 'player falling');
             createImagePreloaderElementIfNeeded($gameDiv, 'critter');
-            $gameDiv.css('transform','scale(2,2)');
             lastLevel = 0;
+            var ww = $('body').width();
+            var wh = $('body').height();
+            var gw = $gameDiv.width();
+            var gh = $gameDivHeight;
+            var scale = Math.min(wh/gh, ww/gw);
+            $gameDiv.css('transform','scale('+scale+','+scale+')');
         },
         initLevel: initLevel,
         renderFrame: function(gameState, dt){
@@ -160,4 +165,4 @@ var createDOMRenderer = function(_, $, window){
             setDirectionClass(gameState.player);
         }
     };
-};
+});
