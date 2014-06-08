@@ -33,14 +33,7 @@ body{
     -webkit-transform-origin: top left;
     -ms-transform-origin: top left;
     transform-origin: top left;
-}
-.imagePreloader{
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100px;
-    height: 100px;
-    opacity: 0.1;
+    z-index: 1;
 }
 body:after{
     display:none;
@@ -53,6 +46,7 @@ body:after{
     height: 10px;
     left: 0;
     right: 0;
+    z-index: 2;
 }
 
 .hole{
@@ -61,13 +55,15 @@ body:after{
     height: 10px;
     position: absolute;
     box-shadow: 0 0 0 3px white;
-  }
+    z-index: 3;
+}
 .critter{
     width: 35px;
     height: 30px;
     position: absolute;
     background-position: 0 0;
     background-image: url('monster.png');
+    z-index: 4;
 }
 .left{
     -ms-transform: scaleX(-1);
@@ -83,7 +79,7 @@ body:after{
     width: 35px;
     height: 30px;
     position: absolute;
-    z-index:50;
+    z-index:10;
     background-image: url('standing-turning.png');
     background-position: 0 0;
 }

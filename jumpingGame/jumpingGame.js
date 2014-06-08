@@ -17,6 +17,7 @@ require(['underscore', 'jquery', 'jumpingGameUtil', 'jumpingGameWorld', 'jumping
         if(dt>1){
             gameState.paused = true;
         }
+        dt *= gameState.gameSpeed;
         if(!gameState.paused){
             gameState.updateGameState(gameState, dt);
         }
@@ -35,8 +36,5 @@ require(['underscore', 'jquery', 'jumpingGameUtil', 'jumpingGameWorld', 'jumping
     $(window).on('resize', function(){
         renderer.init(gameWorld);
     });
-
-
-
 });
 

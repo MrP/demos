@@ -43,12 +43,13 @@ define(['underscore', 'jquery', 'jumpingGameUtil'], function(_, $, util){
 
     // Game units are arbitrary, 100% width and 1 of height each row
     var gameWorld = {
+        gameSpeed: 0.7,
         paused: false,
-        speed: 20,
+        speed: 18,
         numRows: 5,
         width: 100,
         level: 0,
-        gravity: 0.2,
+        gravity: 0.18,
         player: {
             width: 4,
             height: 0.3, //relative to 1 being a row height, used to hit the ceiling
@@ -87,8 +88,8 @@ define(['underscore', 'jquery', 'jumpingGameUtil'], function(_, $, util){
         generateLevel: function(gameState){
             gameState.holes = [];
             gameState.critters = [];
-            gameState.numRows = 5+Math.floor(gameState.level/5);
-            gameState.speed = gameState.speed+Math.floor(gameState.level/10)*5;
+            gameState.numRows += Math.floor(((gameState.level%5)+1)/5);
+            gameState.gameSpeed += Math.floor(((gameState.level%8)+1)/8)*0.1;
             _.times(gameState.numRows+Math.floor(gameState.level/2), function(){
                 gameState.holes.push(generateHole(gameState));
             });
