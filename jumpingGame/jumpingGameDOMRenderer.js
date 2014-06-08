@@ -1,7 +1,7 @@
-define(['underscore', 'jquery', 'jumpingGameUtil'], function(_, $, util){
+define(['underscore', 'jquery', 'jumpingGameUtil', 'jumpingGameWorld'], function(_, $, util, gameWorld){
     var $gameDiv = $("#game");
     var $gameDivHeight = $gameDiv.height();
-    var lastLevel;
+    var lastLevel = -1;
     var playerElementWidth = 3500/$gameDiv.width();
     var critterElementWidth = 3500/$gameDiv.width();
     var holeElementWidth = 10;
@@ -79,16 +79,15 @@ define(['underscore', 'jquery', 'jumpingGameUtil'], function(_, $, util){
     
             
     var initLevel = function(gameState){
-        $gameDiv.html('');
+        $gameDiv.find('.hole').remove();
+        $gameDiv.find('.critter').not('.imagePreloader').remove();
+        $gameDiv.find('.ceiling').remove();
         _.times(gameState.numRows, function(i){
             var $ceiling = $('<div class="ceiling"></div>');
             $gameDiv.append($ceiling);
             $ceiling.css("top", ""+(rowY(gameState, i))+"px");
         });
         lastLevel = gameState.level;
-        $gameDiv.find(".hole").remove();
-        $gameDiv.find(".critter").remove();
-        $gameDiv.find(".player").remove();
         gameState.player.$element = null;
         gameState.holes.forEach(_.partial(createElementIfNeeded, 'hole'));
         gameState.critters.forEach(_.partial(createElementIfNeeded, 'critter animated'));
@@ -103,11 +102,9 @@ define(['underscore', 'jquery', 'jumpingGameUtil'], function(_, $, util){
         obj.$overflowElement.toggleClass('right', obj.speed>0);
     };
     
-    var createImagePreloaderElementIfNeeded = function($el, className){
-        if($el.find('.'+className.split(/ /).join('.')+".imagePreloader").length===0){
-            var a = $('<div class="'+className+' imagePreloader"></div>');
-            $el.append(a);
-        }
+    var preloadImage = function(src){
+        var pic = new Image();
+        pic.src = src;
     };
     
     return {
@@ -116,20 +113,16 @@ define(['underscore', 'jquery', 'jumpingGameUtil'], function(_, $, util){
                 $(document.body).append($('<div id="game"></div>'));
                 $gameDiv = $("#game");
             }
-            createImagePreloaderElementIfNeeded($gameDiv, 'player');
-            createImagePreloaderElementIfNeeded($gameDiv, 'player running');
-            createImagePreloaderElementIfNeeded($gameDiv, 'player jumping');
-            createImagePreloaderElementIfNeeded($gameDiv, 'player falling stunned');
-            createImagePreloaderElementIfNeeded($gameDiv, 'player stunned');
-            createImagePreloaderElementIfNeeded($gameDiv, 'player falling');
-            createImagePreloaderElementIfNeeded($gameDiv, 'critter');
-            lastLevel = 0;
+            preloadImage('running.png');
+            preloadImage('spritesheet_3_tr_2.png');
+            preloadImage('monster.png');
             var ww = $('body').width();
             var wh = $('body').height();
             var gw = $gameDiv.width();
             var gh = $gameDivHeight;
             var scale = Math.min(wh/gh, ww/gw);
             $gameDiv.css('transform','scale('+scale+','+scale+')');
+            $gameDiv.css('background-color', 'white');
         },
         initLevel: initLevel,
         renderFrame: function(gameState, dt){
