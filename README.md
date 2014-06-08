@@ -10,7 +10,7 @@ Cool stuff
 
 
 <h2>Jumping game</h2>
-<p>Very much in progress.  I'm tring to recreate a game I remember from my Spectrum days, in JavaScript</p>
+<p>I'm tring to recreate a game I remember from my Spectrum days, in JavaScript</p>
 <a target="_blank" href="http://rawgit.com/MrP/demos/master/jumpingGame/jumpingGame.html">Jumping Game</a>
 
 
