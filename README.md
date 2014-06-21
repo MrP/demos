@@ -8,6 +8,9 @@ Cool stuff
 <p>I went with getting some raw data from rotten tomatoes' API, massage it a bit and display it with google's chart API</p>
 <a target="_blank" href="http://rawgit.com/MrP/demos/master/rottenTomatoes/rottenTomatoes.html">Rotten tomatoes</a>
 
+<p>And now the same thing but using Angular.  Just for the fun of it.</p>
+<a target="_blank" href="http://rawgit.com/MrP/demos/master/rottenTomatoes/rottenTomatoesAngular.html">Rotten tomatoes using Angular</a>
+
 
 <h2>Jumping game</h2>
 <p>I'm tring to recreate a game I remember from my Spectrum days, in JavaScript</p>
