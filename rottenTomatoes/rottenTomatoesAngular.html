@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script type="text/javascript" src="http://github.com/downloads/fitzgen/wu.js/wu-0.1.8.min.js"></script>
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
     <link type="text/css" rel="stylesheet" href="rottenTomatoesAngular.css">
-    <script type="text/template" id="variableTemplate">
-      <br><input type="radio" id="<%=variableId%>" name="variableRadios" /><label for="<%=variableId%>"><%=label%></label>
-    </script>
+    <script type="text/javascript" data-main="rottenTomatoesAngular" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js"></script>    
   </head>
-  <body>
-    <div id="chart"></div>
-    <div id="variables">Rotten Tomatoes scores of movies currently in theatres</div>
-    <div id="loading">Loading data...</div>
-    <script type="text/javascript" src="rottenTomatoesAngular.js"></script>
+  <body ng-app="rottenTomatoesApp">
+    <div id="loading" ng-controller="LoadingCtrl">
+      Loading data{{loader}}
+    </div>
+    <div id="chart" ng-controller="ChartCtrl">
+    </div>
+    <div id="variables" ng-controller="VariableListCtrl">
+      <h3>Rotten Tomatoes scores of movies currently in theatres</h3>
+      <ul>
+        <li ng-repeat="variable in variables">
+          <input type="radio" ng-value="{{variable.id}}" ng-model="variableRadios" />
+          <label for="{{variable.id}}">{{variable.label}}</label>
+        </li>
+      </ul>
+    </div>
   </body>
 </html>
