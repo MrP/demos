@@ -2,20 +2,22 @@
 <html>
   <head>
     <link type="text/css" rel="stylesheet" href="rottenTomatoesAngular.css">
-    <script type="text/javascript" data-main="rottenTomatoesAngular" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js"></script>    
+    <script type="text/javascript" data-main="rottenTomatoesAngular" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js"></script>
   </head>
-  <body ng-app="rottenTomatoesApp">
+  <body ng-app="rottenTomatoesApp" ng-cloak>
     <div id="loading" ng-controller="LoadingCtrl">
-      Loading data{{loader}}
+      Loading data<span ng-bind="loader"></span>
     </div>
     <div id="chart" ng-controller="ChartCtrl">
     </div>
     <div id="variables" ng-controller="VariableListCtrl">
       <h3>Rotten Tomatoes scores of movies currently in theatres</h3>
       <ul>
-        <li ng-repeat="variable in variables">
-          <input type="radio" ng-value="{{variable.id}}" ng-model="variableRadios" />
-          <label for="{{variable.id}}">{{variable.label}}</label>
+        <li ng-repeat="(id, variable) in variables">
+          <label>
+            <input type="radio" ng-model="$parent.selectedVariableId" name="selectedVariableId" ng-value="id" ng-change="$parent.change(id)" />
+            <span ng-bind="variable.label"></span>
+          </label>
         </li>
       </ul>
     </div>

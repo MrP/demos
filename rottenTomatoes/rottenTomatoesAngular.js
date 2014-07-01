@@ -15,7 +15,7 @@ require.config({
 
 require(['underscore', 'jquery', 'ramda', 'google', 'angular', 'rottenTomatoesAngularApp'], 
 	function(_, $, ramda, google, angular, rottenTomatoesAngularApp){
-		google.load("visualization", "1", {packages:["corechart"]});
+		google.load("visualization", "1", {packages:["corechart"], 'callback':angular.noop});
 
 		//http://code.angularjs.org/1.2.1/docs/guide/bootstrap#overview_deferred-bootstrap
 		window.name = "NG_DEFER_BOOTSTRAP!";

@@ -56,16 +56,23 @@ define(['underscore', 'jquery', 'ramda', 'google', 'angular'], function(_, $, ra
 		return {'id':null};
 	});
 
-	rottenTomatoesApp.controller('VariableListCtrl', ['$scope', 'variables', 'selectedVariable', function ($scope, variables, selectedVariable) {
+	rottenTomatoesApp.controller('VariableListCtrl', ['$scope', '$rootScope', 'variables', 'selectedVariable', function ($scope, $rootScope, variables, selectedVariable) {
 		$scope.variables = variables;
-		$scope.$watch('variableRadios', function(variableId){
+		$scope.selectedVariableId = Object.keys(variables)[0];
+		$scope.change = function(variableId){
 			selectedVariable.id = variableId;
+			// $rootScope.$digest();
+		};
+		$scope.$watch(function(){return $scope.selectedVariableId;}, function(newValue, oldValue){
+			if(newValue!==oldValue){
+				selectedVariable.id = newValue;
+			}
 		});
 	}]);
 
 
 
-	rottenTomatoesApp.controller('LoadingCtrl', ['$scope', 'movies', 'variables', 'selectedVariable', function ($scope, movies, variables, selectedVariable) {
+	rottenTomatoesApp.controller('LoadingCtrl', ['$scope', '$rootScope', 'movies', 'variables', 'selectedVariable', function ($scope, $rootScope, movies, variables, selectedVariable) {
 		var urlAPI = 'http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
 		var useFallbackData = /https/.test(document.location.protocol);
 		if(useFallbackData){
@@ -92,8 +99,9 @@ define(['underscore', 'jquery', 'ramda', 'google', 'angular'], function(_, $, ra
 				}
 			}else{
 				$('#loading').remove();
-				selectedVariable.id = Object.keys(variables)[0];
+				// selectedVariable.id = Object.keys(variables)[0];
 			}
+			$rootScope.$digest();
 		};
 
 		if(useFallbackData){
@@ -129,10 +137,12 @@ define(['underscore', 'jquery', 'ramda', 'google', 'angular'], function(_, $, ra
 			return _.compact(dataArray);
 		};
 
-		$scope.$watch(function(){return selectedVariable.id;}, function(id){
+		$scope.$watch(function(){
+			return selectedVariable.id;
+		}, function(id){
 			var elChart = document.getElementById('chart');
 			if(id){
-				var data = google.visualization.arrayToDataTable(getDataArray(movies.list, variables[id].label, variables[id].getVariable, variables[id].binFn));
+				var data = google.visualization.arrayToDataTable(getDataArray(movies.list, variables[id].label, variables[id].getVariable, variables[id].binningFunction));
 				var chart = new google.visualization.ColumnChart(elChart);
 				chart.draw(data, {isStacked: true,
 						hAxis: {title: variables[id].label},
