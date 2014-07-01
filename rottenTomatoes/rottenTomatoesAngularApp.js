@@ -56,18 +56,9 @@ define(['underscore', 'jquery', 'ramda', 'google', 'angular'], function(_, $, ra
 		return {'id':null};
 	});
 
-	rottenTomatoesApp.controller('VariableListCtrl', ['$scope', '$rootScope', 'variables', 'selectedVariable', function ($scope, $rootScope, variables, selectedVariable) {
+	rottenTomatoesApp.controller('VariableListCtrl', ['$scope', 'variables', 'selectedVariable', function ($scope, variables, selectedVariable) {
 		$scope.variables = variables;
-		$scope.selectedVariableId = Object.keys(variables)[0];
-		$scope.change = function(variableId){
-			selectedVariable.id = variableId;
-			// $rootScope.$digest();
-		};
-		$scope.$watch(function(){return $scope.selectedVariableId;}, function(newValue, oldValue){
-			if(newValue!==oldValue){
-				selectedVariable.id = newValue;
-			}
-		});
+		$scope.selectedVariable = selectedVariable;
 	}]);
 
 
