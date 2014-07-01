@@ -1,0 +1,20 @@
+#chart{
+  float:left;
+  width:65%;
+  height:500px;
+}
+#variables{
+  float:left;
+  width: 25%;
+}
+#loading{
+  position:fixed;
+  top:0;
+  left:0;
+  bottom:0;
+  right:0;
+  background-color:white;
+  opacity:0.5;
+  padding:100px 100px;
+  font-size:40px;
+}

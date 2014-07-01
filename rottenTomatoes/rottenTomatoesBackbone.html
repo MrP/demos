@@ -2,12 +2,12 @@
 <html>
   <head>
     <style>.ng-cloak { display:none; }</style>
-    <link type="text/css" rel="stylesheet" href="rottenTomatoesAngular.css">
-    <script type="text/javascript" data-main="rottenTomatoesAngular" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="rottenTomatoesBackbone.css">
+    <script type="text/javascript" data-main="rottenTomatoesBackbone" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js"></script>
   </head>
   <body ng-app="rottenTomatoesApp">
-    <div id="loading" ng-controller="LoadingCtrl" ng-bind="loader">
-      Loading data
+    <div id="loading" ng-controller="LoadingCtrl">
+      Loading data<span ng-bind="loader"></span>
     </div>
     <div id="chart" ng-controller="ChartCtrl">
     </div>

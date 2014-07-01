@@ -1,4 +1,4 @@
-define(['underscore', 'ramda', 'google', 'angular'], function(_, ramda, google, angular){
+define(['underscore', 'jquery', 'ramda', 'google', 'angular'], function(_, $, ramda, google, angular){
 	var rottenTomatoesApp = angular.module('rottenTomatoesApp', []);
 
 	rottenTomatoesApp.factory('movies', function(){
@@ -63,17 +63,17 @@ define(['underscore', 'ramda', 'google', 'angular'], function(_, ramda, google, 
 
 
 
-	rottenTomatoesApp.controller('LoadingCtrl', ['$scope', '$http', 'movies', 'variables', 'selectedVariable', function ($scope, $http, movies, variables, selectedVariable) {
+	rottenTomatoesApp.controller('LoadingCtrl', ['$scope', '$rootScope', 'movies', 'variables', 'selectedVariable', function ($scope, $rootScope, movies, variables, selectedVariable) {
 		var urlAPI = 'http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
 		var useFallbackData = /https/.test(document.location.protocol);
 		if(useFallbackData){
 			urlAPI = 'in_theaters1.json';
 		}
 		var paramsAPI = {'apikey':'erwdg8fnngbwfw92krs7mw9w',
-			'callback':'JSON_CALLBACK',
+			'callback':'processJsonp',
 			'page_limit':'50'};
 
-		$scope.loader = 'Loading data';
+		$scope.loader = '';
 
 		//Gets the data from the server
 		// this is the function that will be called from the JSONP response, automatically.  See its name in the
@@ -84,24 +84,23 @@ define(['underscore', 'ramda', 'google', 'angular'], function(_, ramda, google, 
 			if(data.links.next && movies.list.length<=100){ //Limit it to not hammer the API too much
 				$scope.loader += '...';
 				if(useFallbackData){
-					$http.get(urlAPI.replace(/(\d)/, function(n){return ""+(parseInt(n, 10)+1);}))
-						.success(processJsonp);
+					$.get(urlAPI.replace(/(\d)/, function(n){return ""+(parseInt(n, 10)+1);}));
 				}else{
-					$http.jsonp(data.links.next, {'params':paramsAPI})
-						.success(processJsonp);
+					$.get(data.links.next, paramsAPI);
 				}
 			}else{
-				angular.element(document.getElementById('loading')).remove();
+				$('#loading').remove();
 				selectedVariable.id = Object.keys(variables)[0];
 			}
+			$rootScope.$digest();
 		};
 
 		if(useFallbackData){
-			$http.get(urlAPI)
-				.success(processJsonp);
+			$.ajaxSetup({dataType:'json', success:processJsonp});
+			$.get(urlAPI);
 		}else{
-			$http.jsonp(urlAPI, {'params':paramsAPI})
-				.success(processJsonp);
+			$.ajaxSetup({dataType:'jsonp', success:processJsonp});
+			$.get(urlAPI, paramsAPI);
 		}
 
 	}]);
