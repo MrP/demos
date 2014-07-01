@@ -1,4 +1,4 @@
-define(['underscore', 'ramda', 'google', 'angular'], function(_, ramda, google, angular){
+define(['ramda', 'google', 'angular'], function(ramda, google, angular){
 	var rottenTomatoesApp = angular.module('rottenTomatoesApp', []);
 
 	rottenTomatoesApp.factory('movies', function(){
@@ -12,13 +12,13 @@ define(['underscore', 'ramda', 'google', 'angular'], function(_, ramda, google, 
 			values.sort(function(a, b){
 				return a<b?-1:(a>b?1:0);
 			});
-			return _.uniq(values).indexOf(variableValue);
+			return ramda.uniq(values).indexOf(variableValue);
 		};
 
 		// Then number binning function puts numbers into at most 10 equally wide bins
 		var numberBinFn = function(variableValue, values){
-			var max = _.max(values);
-			var min = _.min(values);
+			var max = ramda.max(values);
+			var min = ramda.min(values);
 			// Cap the number of bins to 10
 			var numBins = Math.min(10, max-min+1);
 			var currentBin = 0;
@@ -66,6 +66,7 @@ define(['underscore', 'ramda', 'google', 'angular'], function(_, ramda, google, 
 	rottenTomatoesApp.controller('LoadingCtrl', ['$scope', '$http', 'movies', 'variables', 'selectedVariable', function ($scope, $http, movies, variables, selectedVariable) {
 		var urlAPI = 'http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
 		var useFallbackData = /https/.test(document.location.protocol);
+		// From https we can't call http, and RT's API doesn't do https, so we'll load a bunch of static json files instead
 		if(useFallbackData){
 			urlAPI = 'in_theaters1.json';
 		}
@@ -80,7 +81,7 @@ define(['underscore', 'ramda', 'google', 'angular'], function(_, ramda, google, 
 		// ajax GET URL
 		var processJsonp = function(data){
 			// Get rid of movies without ratings
-			movies.list = movies.list.concat(_.reject(data.movies, _.compose(_.isUndefined, ramda.prop('critics_rating'), ramda.prop('ratings'))));
+			movies.list = movies.list.concat(ramda.reject(ramda.compose(angular.isUndefined, ramda.prop('critics_rating'), ramda.prop('ratings')), data.movies));
 			if(data.links.next && movies.list.length<=100){ //Limit it to not hammer the API too much
 				$scope.loader += '...';
 				if(useFallbackData){
@@ -91,7 +92,9 @@ define(['underscore', 'ramda', 'google', 'angular'], function(_, ramda, google, 
 						.success(processJsonp);
 				}
 			}else{
+				//Remove loading overlay
 				angular.element(document.getElementById('loading')).remove();
+				//Auto-select one variable
 				selectedVariable.id = Object.keys(variables)[0];
 			}
 		};
@@ -108,7 +111,7 @@ define(['underscore', 'ramda', 'google', 'angular'], function(_, ramda, google, 
 
 	rottenTomatoesApp.controller('ChartCtrl', ['$scope', 'movies', 'variables', 'selectedVariable', function ($scope, movies, variables, selectedVariable) {
 		var getDataArray = function(movies, label, getVariable/*(movie)*/, binFn/*(variableValue, values)*/){
-			var validMovies = _.reject(movies, _.compose(_.isUndefined, getVariable));
+			var validMovies = ramda.reject(ramda.compose(angular.isUndefined, getVariable), movies);
 			var bins = [];
 			validMovies.forEach(function(movie){
 				var b = binFn(getVariable(movie), validMovies.map(getVariable));
@@ -117,16 +120,20 @@ define(['underscore', 'ramda', 'google', 'angular'], function(_, ramda, google, 
 			});
 			var ratings = ['Rotten', 'Fresh', 'Certified Fresh'];
 			var dataArray = [[label].concat(ratings)].concat(bins.map(function(bin){
-				var ratingsBin = _.object(ratings, [0,0,0]);
+				var ratingsBin = ramda.reduce(function(acc, rating){
+					acc[rating]=0;
+					return acc;
+				}, {}, ratings);
+				
 				bin.forEach(function(m){
 					ratingsBin[m.ratings.critics_rating]++;
 				});
 				var barLabel = bin.length===0 ? ''
 					: typeof getVariable(bin[0]) === 'string' ? getVariable(bin[0])
-					: _.min(bin.map(getVariable))+ ' to ' +_.max(bin.map(getVariable));
-				return [barLabel].concat(_.values(ratingsBin));
+					: ramda.min(bin.map(getVariable)) + ' to ' + ramda.max(bin.map(getVariable));
+				return [barLabel].concat(ramda.values(ratingsBin));
 			}));
-			return _.compact(dataArray);
+			return ramda.filter(function(item){return !!item;}, dataArray);
 		};
 
 		$scope.$watch(function(){

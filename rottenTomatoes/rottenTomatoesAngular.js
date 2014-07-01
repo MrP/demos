@@ -1,12 +1,10 @@
 require.config({
   paths: {
-    underscore: '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min',
     angular: '//ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.13/angular.min',
     ramda: '//rawgit.com/CrossEye/ramda/master/ramda',
     google: 'googlejsapi'
   },
   shim: {
-    'underscore': {exports: "_"},
     'angular' : {'exports' : 'angular'},
     'google' : {'exports' : 'google'},
   }
