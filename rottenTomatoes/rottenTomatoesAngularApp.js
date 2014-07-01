@@ -90,7 +90,7 @@ define(['underscore', 'jquery', 'ramda', 'google', 'angular'], function(_, $, ra
 				}
 			}else{
 				$('#loading').remove();
-				// selectedVariable.id = Object.keys(variables)[0];
+				selectedVariable.id = Object.keys(variables)[0];
 			}
 			$rootScope.$digest();
 		};
