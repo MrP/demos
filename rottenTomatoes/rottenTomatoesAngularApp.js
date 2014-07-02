@@ -1,4 +1,4 @@
-define(['ramda', 'google', 'angular', 'rottenTomatoesMovieClassifier'], function(ramda, google, angular, movieClassifier){
+define(['ramda', 'angular', 'rottenTomatoesMovieVariables', 'rottenTomatoesChartPainter'], function(ramda, angular, movieVariables, chartPainter){
 	var rottenTomatoesApp = angular.module('rottenTomatoesApp', []);
 
 	rottenTomatoesApp.factory('movies', function(){
@@ -6,53 +6,7 @@ define(['ramda', 'google', 'angular', 'rottenTomatoesMovieClassifier'], function
 	});
 
 	rottenTomatoesApp.factory('variables', function(){
-		return {
-			'runtime': {
-				'label': 'Runtime in minutes',
-				'getVariable': ramda.prop('runtime'),
-				'binningFunction': movieClassifier.numberBinFn
-			},
-			'releaseMonth': {
-				'label': 'Release month',
-				'getVariable': function(movie){
-					return parseInt(movie.release_dates.theater.match(/-(\d\d)-/)[1], 10);
-				},
-				'binningFunction': movieClassifier.numberBinFn
-			},
-			'mpaaRating': {
-				'label': 'MPAA rating',
-				'getVariable': ramda.prop('mpaa_rating'),
-				'binningFunction': movieClassifier.stringBinFn
-			},
-			'numberWordsTitle': {
-				'label': 'Number of words in the title',
-				'getVariable': function(movie){
-					return movie.title.split(/\s/).length;
-				},
-				'binningFunction': movieClassifier.numberBinFn
-			},
-			'numberWordsSynopsis': {
-				'label': 'Number of words in the synopsis',
-				'getVariable': function(movie){
-					return movie.synopsis.split(/\s/).length;
-				},
-				'binningFunction': movieClassifier.numberBinFn
-			},
-			'numberDigitsTitle': {
-				'label': 'Number of digits in the title',
-				'getVariable': function(movie){
-					return movie.title.replace(/\D/g,'').length;
-				},
-				'binningFunction': movieClassifier.numberBinFn
-			},
-			'firstLetterTitle': {
-				'label': 'First letter of the title',
-				'getVariable': function(movie){
-					return movie.title[0].toUpperCase();
-				},
-				'binningFunction': movieClassifier.stringBinFn
-			}
-		};
+		return movieVariables;
 	});
 
 	rottenTomatoesApp.factory('selectedVariable', function(){
@@ -112,33 +66,17 @@ define(['ramda', 'google', 'angular', 'rottenTomatoesMovieClassifier'], function
 
 
 
-	rottenTomatoesApp.controller('ChartCtrl', ['$scope', 'movies', 'variables', 'selectedVariable', function ($scope, movies, variables, selectedVariable) {
-		var getDataArray = function(bins, label, getBinLabel/*(bin)*/){
-			var bars = ramda.map(function(bin){
-				return [getBinLabel(bin)].concat(ramda.values(movieClassifier.getRatingsFromBin(bin)));
-			}, bins);
-
-			var dataArray = [[label].concat(movieClassifier.ratingsLabels)].concat(bars);
-			return ramda.reject(angular.isUndefined, dataArray);
-		};
-
+	rottenTomatoesApp.controller('ChartCtrl', ['$scope', 'movies', 'selectedVariable', function ($scope, movies, selectedVariable) {
 		$scope.$watch(function(){
 			return selectedVariable.id;
 		}, function(id){
 			var elChart = document.getElementById('chart');
 			if(id){
-				var bins = movieClassifier.getVariableBins(movies.list, variables[id].getVariable, variables[id].binningFunction);
-				var getBinLabel = ramda.compose(movieClassifier.getBinLabelFromValues, ramda.map(variables[id].getVariable));
-				var data = google.visualization.arrayToDataTable(getDataArray(bins, variables[id].label, getBinLabel));
-				var chart = new google.visualization.ColumnChart(elChart);
-				chart.draw(data, {isStacked: true,
-						hAxis: {title: variables[id].label},
-						colors:['green', 'yellow', 'red']});
+				chartPainter.paintChart(movies.list, elChart, id);
 			}else{
 				elChart.innerHTML = '';
 			}
 		});
-
 	}]);
 
 	return rottenTomatoesApp;

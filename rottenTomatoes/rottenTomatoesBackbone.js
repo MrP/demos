@@ -10,7 +10,7 @@ require.config({
   }
 });
 
-require(['google', 'angular', 'rottenTomatoesAngularApp'],
+require(['google', 'angular', 'rottenTomatoesBackboneApp'],
 	function(google, angular, rottenTomatoesAngularApp){
 		//http://code.angularjs.org/1.2.1/docs/guide/bootstrap#overview_deferred-bootstrap
 		window.name = "NG_DEFER_BOOTSTRAP!";

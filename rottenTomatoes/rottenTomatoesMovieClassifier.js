@@ -68,7 +68,9 @@ define(['ramda', 'rottenTomatoesMovieClassifier'], function(ramda){
 		'getVariableBins': getVariableBins,
 		'ratingsLabels': ratingsLabels,
 		'stringBinFn': stringBinFn,
-		'numberBinFn': numberBinFn
+		'numberBinFn': numberBinFn,
+		'isUndefined': isUndefined,
+		'rejectUndefined': rejectUndefined
 	};
 });
 
