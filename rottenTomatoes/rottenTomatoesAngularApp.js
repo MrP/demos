@@ -10,7 +10,7 @@ define(['ramda', 'google', 'angular'], function(ramda, google, angular){
 		// so the pool of possible values should be sensible
 		var stringBinFn = function(variableValue, values){
 			values.sort(function(a, b){
-				return a<b?-1:(a>b?1:0);
+				return a<b?-1:(a>b?1:0); //Comparing strings! Don't replace with a substraction
 			});
 			return ramda.uniq(values).indexOf(variableValue);
 		};
@@ -21,14 +21,12 @@ define(['ramda', 'google', 'angular'], function(ramda, google, angular){
 			var min = ramda.min(values);
 			// Cap the number of bins to 10
 			var numBins = Math.min(10, max-min+1);
-			var currentBin = 0;
 			var binWidth = (max-min)/numBins;
-			for(var bin=0;bin<numBins;++bin){
-				if(variableValue >= min+binWidth*bin){
-					currentBin = bin;
-				}
-			}
-			return currentBin;
+			var bins = ramda.range(0, numBins /*exclusive*/);
+			return ramda.reduce(function(acc, bin){
+				return variableValue >= min+binWidth*bin?bin:acc;
+			}, 0, bins);
+
 		};
 
 		return {
@@ -60,8 +58,6 @@ define(['ramda', 'google', 'angular'], function(ramda, google, angular){
 		$scope.variables = variables;
 		$scope.selectedVariable = selectedVariable;
 	}]);
-
-
 
 	rottenTomatoesApp.controller('LoadingCtrl', ['$scope', '$http', 'movies', 'variables', 'selectedVariable', function ($scope, $http, movies, variables, selectedVariable) {
 		var urlAPI = 'http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
@@ -110,30 +106,36 @@ define(['ramda', 'google', 'angular'], function(ramda, google, angular){
 	}]);
 
 	rottenTomatoesApp.controller('ChartCtrl', ['$scope', 'movies', 'variables', 'selectedVariable', function ($scope, movies, variables, selectedVariable) {
-		var getDataArray = function(movies, label, getVariable/*(movie)*/, binFn/*(variableValue, values)*/){
-			var validMovies = ramda.reject(ramda.compose(angular.isUndefined, getVariable), movies);
-			var bins = [];
-			validMovies.forEach(function(movie){
-				var b = binFn(getVariable(movie), validMovies.map(getVariable));
-				bins[b] = bins[b] || [];
-				bins[b].push(movie);
+		var cloneObject = ramda.omit([]);
+		var getBarLabelFromBin = function(getVariable/*(movie)*/, bin){
+			return bin.length===0 ? ''
+				: typeof getVariable(bin[0]) === 'string' ? getVariable(bin[0])
+				: ramda.min(bin.map(getVariable)) + ' to ' + ramda.max(bin.map(getVariable));
+		};
+
+		var getDataArray = function(movies, label, getVariable/*(movie)*/, binningFunction/*(variableValue, values)*/){
+			var ratingsBin = {'Rotten':0, 'Fresh':0, 'Certified Fresh':0};
+			var ratingsLabels = Object.keys(ratingsBin);
+			var moviesWithVariable = ramda.reject(ramda.compose(angular.isUndefined, getVariable), movies);
+			var movieVariables = moviesWithVariable.map(getVariable);
+			var bins = ramda.reduce(function(accBins, movie){
+				var bin = binningFunction(getVariable(movie), movieVariables);
+				accBins[bin] = accBins[bin] || [];
+				accBins[bin].push(movie);
+				return accBins;
+			}, [], moviesWithVariable);
+
+			var bars = bins.map(function(bin){
+				var ratingsBins = ramda.reduce(function(accRatings, movie){
+					accRatings[movie.ratings.critics_rating]++;
+					return accRatings;
+				}, cloneObject(ratingsBin), bin);
+
+				return [getBarLabelFromBin(getVariable, bin)].concat(ramda.values(ratingsBins));
 			});
-			var ratings = ['Rotten', 'Fresh', 'Certified Fresh'];
-			var dataArray = [[label].concat(ratings)].concat(bins.map(function(bin){
-				var ratingsBin = ramda.reduce(function(acc, rating){
-					acc[rating]=0;
-					return acc;
-				}, {}, ratings);
-				
-				bin.forEach(function(m){
-					ratingsBin[m.ratings.critics_rating]++;
-				});
-				var barLabel = bin.length===0 ? ''
-					: typeof getVariable(bin[0]) === 'string' ? getVariable(bin[0])
-					: ramda.min(bin.map(getVariable)) + ' to ' + ramda.max(bin.map(getVariable));
-				return [barLabel].concat(ramda.values(ratingsBin));
-			}));
-			return ramda.filter(function(item){return !!item;}, dataArray);
+
+			var dataArray = [[label].concat(ratingsLabels)].concat(bars);
+			return ramda.reject(angular.isUndefined, dataArray);
 		};
 
 		$scope.$watch(function(){
