@@ -1,4 +1,36 @@
-define(['ramda', 'angular', 'rottenTomatoesMovieVariables', 'rottenTomatoesChartPainter'], function(ramda, angular, movieVariables, chartPainter){
+define(['jquery', 'ramda', 'backbone', 'rottenTomatoesMovieVariables', 'rottenTomatoesChartPainter'], function($, ramda, Backbone, movieVariables, chartPainter){
+
+	window.LoadingView = Backbone.View.extend({
+		el: $("#loading")
+	});
+	window.VariablesView = Backbone.View.extend({
+		el: $("#variables"),
+		events: {
+			"change .variable": "changeVariable"
+		},
+		changeVariable: function(){
+			alert('wat');
+		},
+		initialize: function () {
+			this.variables = new Variables( null, { view: this }); //?????
+		}
+	});
+	window.ChartView = Backbone.View.extend({
+		el: $("#chart")
+	});
+
+	var Variable = Backbone.Model.extend({
+		id: null,
+		label: null,
+		getVariable: null,
+		binningFunction: null
+	});
+	var Variables = Backbone.Collection.extend({
+		initialize: function (models, options) {
+			this.bind("add", options.view.addFriendLi);
+		}
+	});
+
 	var rottenTomatoesApp = angular.module('rottenTomatoesApp', []);
 
 	rottenTomatoesApp.factory('movies', function(){
