@@ -5,7 +5,95 @@ define(['ramda', 'google', 'angular'], function(ramda, google, angular){
 		return {'list':[]};
 	});
 
-	rottenTomatoesApp.factory('variables', function(){
+	rottenTomatoesApp.factory('variables', ['movieClassifier', function(movieClassifier){
+
+		return {
+			'runtime': {'label':'Runtime in minutes', 
+									'getVariable':ramda.prop('runtime'), 
+									'binningFunction':movieClassifier.numberBinFn
+			},
+			'releaseMonth': {'label':'Release month', 
+												'getVariable':function(movie){
+													return parseInt(movie.release_dates.theater.match(/-(\d\d)-/)[1], 10);
+												}, 
+												'binningFunction':movieClassifier.numberBinFn
+			},
+			'mpaaRating': {'label':'MPAA rating', 
+											'getVariable':ramda.prop('mpaa_rating'), 
+											'binningFunction':movieClassifier.stringBinFn
+			},
+			'numberWordsTitle': {'label':'Number of words in the title', 
+													'getVariable':function(movie){
+														return movie.title.split(/\s/).length;
+													}, 
+													'binningFunction':movieClassifier.numberBinFn
+			},
+			'numberWordsSynopsis': {'label':'Number of words in the synopsis', 
+														'getVariable':function(movie){
+															return movie.synopsis.split(/\s/).length;
+														}, 
+														'binningFunction':movieClassifier.numberBinFn
+			},
+			'numberDigitsTitle': {'label':'Number of digits in the title', 
+														'getVariable':function(movie){
+															return movie.title.replace(/\D/g,'').length;
+														}, 
+														'binningFunction':movieClassifier.numberBinFn
+			},
+			'firstLetterTitle': {'label': 'First letter of the title', 
+														'getVariable': function(movie){
+															return movie.title[0].toUpperCase();
+														},
+														'binningFunction': movieClassifier.stringBinFn
+			}
+		};
+	}]);
+
+	rottenTomatoesApp.factory('selectedVariable', function(){
+		return {'id':null};
+	});
+
+	rottenTomatoesApp.factory('movieClassifier', function(){
+		var cloneObject = ramda.omit([]);
+		var initialRatings = {'Rotten':0, 'Fresh':0, 'Certified Fresh':0};
+		var ratingsLabels = Object.keys(initialRatings);
+		var rejectUndefined = ramda.reject(angular.isUndefined);
+
+		var getVariableBins = function(movies, getVariable/*(movie)*/, binningFunction/*(variableValue, values)*/){
+			var moviesWithVariable = ramda.reject(ramda.compose(angular.isUndefined, getVariable), movies);
+			var movieVariables = moviesWithVariable.map(getVariable);
+			var bins = ramda.reduce(function(accBins, movie){
+				var bin = binningFunction(getVariable(movie), movieVariables);
+				accBins[bin] = accBins[bin] || [];
+				accBins[bin].push(movie);
+				return accBins;
+			}, [], moviesWithVariable);
+			return rejectUndefined(bins);
+		};
+
+		var getBinLabelFromValues = function(binValues){
+			if(binValues.length===0){
+				return '';
+			}else if(typeof binValues[0] === 'string'){
+				return binValues[0];
+			}else{
+				var min = ramda.min(binValues);
+				var max = ramda.max(binValues);
+				if(min===max){
+					return '' + min;
+				}else{
+					return min + ' to ' + max;
+				}
+			}
+		};
+
+		var getRatingsFromBin = function(bin){
+			return ramda.reduce(function(accRatings, movie){
+				accRatings[movie.ratings.critics_rating]++;
+				return accRatings;
+			}, cloneObject(initialRatings), bin);
+		};
+		
 		// The string bin function will have a bin for each possible value,
 		// so the pool of possible values should be sensible
 		var stringBinFn = function(variableValue, values){
@@ -26,32 +114,16 @@ define(['ramda', 'google', 'angular'], function(ramda, google, angular){
 			return ramda.reduce(function(acc, bin){
 				return variableValue >= min+binWidth*bin?bin:acc;
 			}, 0, bins);
-
 		};
 
 		return {
-			'runtime' : {'label':'Runtime in minutes', 'getVariable':ramda.prop('runtime'), 'binningFunction':numberBinFn},
-			'releaseMonth' : {'label':'Release month', 'getVariable':function(movie){
-				return parseInt(movie.release_dates.theater.match(/-(\d\d)-/)[1], 10);
-			}, 'binningFunction':numberBinFn},
-			'mpaaRating' : {'label':'MPAA rating', 'getVariable':ramda.prop('mpaa_rating'), 'binningFunction':stringBinFn},
-			'numberWordsTitle' : {'label':'Number of words in the title', 'getVariable':function(movie){
-				return movie.title.split(/\s/).length;
-			}, 'binningFunction':numberBinFn},
-			'numberWordsSynopsis' : {'label':'Number of words in the synopsis', 'getVariable':function(movie){
-				return movie.synopsis.split(/\s/).length;
-			}, 'binningFunction':numberBinFn},
-			'numberDigitsTitle' : {'label':'Number of digits in the title', 'getVariable':function(movie){
-				return movie.title.replace(/\D/g,'').length;
-			}, 'binningFunction':numberBinFn},
-			'firstLetterTitle' : {'label':'First letter of the title', 'getVariable':function(movie){
-				return movie.title[0].toUpperCase();
-			}, 'binningFunction':stringBinFn}
+			'getRatingsFromBin': getRatingsFromBin,
+			'getBinLabelFromValues': getBinLabelFromValues,
+			'getVariableBins': getVariableBins,
+			'ratingsLabels': ratingsLabels,
+			'stringBinFn': stringBinFn,
+			'numberBinFn': numberBinFn
 		};
-	});
-
-	rottenTomatoesApp.factory('selectedVariable', function(){
-		return {'id':null};
 	});
 
 	rottenTomatoesApp.controller('VariableListCtrl', ['$scope', 'variables', 'selectedVariable', function ($scope, variables, selectedVariable) {
@@ -105,36 +177,15 @@ define(['ramda', 'google', 'angular'], function(ramda, google, angular){
 
 	}]);
 
-	rottenTomatoesApp.controller('ChartCtrl', ['$scope', 'movies', 'variables', 'selectedVariable', function ($scope, movies, variables, selectedVariable) {
-		var cloneObject = ramda.omit([]);
-		var getBarLabelFromBin = function(getVariable/*(movie)*/, bin){
-			return bin.length===0 ? ''
-				: typeof getVariable(bin[0]) === 'string' ? getVariable(bin[0])
-				: ramda.min(bin.map(getVariable)) + ' to ' + ramda.max(bin.map(getVariable));
-		};
 
-		var getDataArray = function(movies, label, getVariable/*(movie)*/, binningFunction/*(variableValue, values)*/){
-			var ratingsBin = {'Rotten':0, 'Fresh':0, 'Certified Fresh':0};
-			var ratingsLabels = Object.keys(ratingsBin);
-			var moviesWithVariable = ramda.reject(ramda.compose(angular.isUndefined, getVariable), movies);
-			var movieVariables = moviesWithVariable.map(getVariable);
-			var bins = ramda.reduce(function(accBins, movie){
-				var bin = binningFunction(getVariable(movie), movieVariables);
-				accBins[bin] = accBins[bin] || [];
-				accBins[bin].push(movie);
-				return accBins;
-			}, [], moviesWithVariable);
 
-			var bars = bins.map(function(bin){
-				var ratingsBins = ramda.reduce(function(accRatings, movie){
-					accRatings[movie.ratings.critics_rating]++;
-					return accRatings;
-				}, cloneObject(ratingsBin), bin);
+	rottenTomatoesApp.controller('ChartCtrl', ['$scope', 'movies', 'variables', 'selectedVariable', 'movieClassifier', function ($scope, movies, variables, selectedVariable, movieClassifier) {
+		var getDataArray = function(bins, label, getBinLabel/*(bin)*/){
+			var bars = ramda.map(function(bin){
+				return [getBinLabel(bin)].concat(ramda.values(movieClassifier.getRatingsFromBin(bin)));
+			}, bins);
 
-				return [getBarLabelFromBin(getVariable, bin)].concat(ramda.values(ratingsBins));
-			});
-
-			var dataArray = [[label].concat(ratingsLabels)].concat(bars);
+			var dataArray = [[label].concat(movieClassifier.ratingsLabels)].concat(bars);
 			return ramda.reject(angular.isUndefined, dataArray);
 		};
 
@@ -143,7 +194,9 @@ define(['ramda', 'google', 'angular'], function(ramda, google, angular){
 		}, function(id){
 			var elChart = document.getElementById('chart');
 			if(id){
-				var data = google.visualization.arrayToDataTable(getDataArray(movies.list, variables[id].label, variables[id].getVariable, variables[id].binningFunction));
+				var bins = movieClassifier.getVariableBins(movies.list, variables[id].getVariable, variables[id].binningFunction);
+				var getBinLabel = ramda.compose(movieClassifier.getBinLabelFromValues, ramda.map(variables[id].getVariable));
+				var data = google.visualization.arrayToDataTable(getDataArray(bins, variables[id].label, getBinLabel));
 				var chart = new google.visualization.ColumnChart(elChart);
 				chart.draw(data, {isStacked: true,
 						hAxis: {title: variables[id].label},
