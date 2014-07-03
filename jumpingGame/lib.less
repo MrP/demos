@@ -1,0 +1,60 @@
+
+.transform-origin(@posV_posH){
+    -webkit-transform-origin: @arguments;
+    -moz-transform-origin: @arguments;
+    -ms-transform-origin: @arguments;
+    -o-transform-origin: @arguments;
+    transform-origin: @arguments;
+}
+.transition-property-transform(){
+    -webkit-transition-property: -webkit-transform;
+    -moz-transition-property: -moz-transform;
+    -ms-transition-property: -ms-transform;
+    -o-transition-property: -o-transform;
+    transition-property: transform;
+}
+.transition-duration(@duration){
+    -webkit-transition-duration: @arguments;
+    -moz-transition-duration: @arguments;
+    -ms-transition-duration: @arguments;
+    -o-transition-duration: @arguments;
+    transition-duration: @arguments;
+}
+.transform(@tr){
+    -webkit-transform: @arguments;
+    -moz-transform: @arguments;
+    -ms-transform: @arguments;
+    -o-transform: @arguments;
+    transform: @arguments;
+}
+.animation(@name; @duration; @numSteps; @iterations){
+    -webkit-animation: @name @duration steps(@numSteps) @iterations;
+    -moz-animation: @name @duration steps(@numSteps) @iterations;
+    -ms-animation: @name @duration steps(@numSteps) @iterations;
+    -o-animation: @name @duration steps(@numSteps) @iterations;
+    animation: @name @duration steps(@numSteps) @iterations;
+}
+
+
+// .keyframes(@name, @from, @to) {
+//     @-webkit-keyframes "@name" {
+//         from {@from;}
+//         to {@to;}
+//     }
+//     @-moz-keyframes "@name" {
+//         from {@from;}
+//         to {@to;}
+//     }
+//     @-ms-keyframes "@name" {
+//         from {@from;}
+//         to {@to;}
+//     }
+//     @-o-keyframes "@name" {
+//         from {@from;}
+//         to {@to;}
+//     }
+//     @keyframes "@name" {
+//         from {@from;}
+//         to {@to;}
+//     }
+// }

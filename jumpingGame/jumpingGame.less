@@ -1,0 +1,135 @@
+@import "lib.less";
+
+body{
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: black;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+.paused{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity:0.6;
+    background-color: black;
+    z-index:1000;
+}
+#game{
+    position: relative;
+    margin: 0 auto;
+    width: 213.33px;
+    height: 320px;
+    background-color: black;
+    overflow: hidden;
+    z-index: 1;
+    .transform-origin(top center);
+    .transition-property-transform();
+    .transition-duration(0.5s);
+}
+body:after{
+    display:none;
+    content: url(running.png) url(spritesheet_3_tr_2.png);
+}
+
+.ceiling{
+    background-color: black;
+    position: absolute;
+    height: 10px;
+    left: 0;
+    right: 0;
+    z-index: 2;
+}
+
+.hole{
+    background-color: white;
+    width: 10%;
+    height: 10px;
+    position: absolute;
+    box-shadow: 0 0 0 3px white;
+    z-index: 3;
+}
+.critter{
+    width: 35px;
+    height: 30px;
+    position: absolute;
+    background-position: 0 0;
+    background-image: url('monster.png');
+    z-index: 4;
+}
+.left{
+    .transform(scaleX(-1));
+    filter: FlipH;
+    -ms-filter: "FlipH";
+}
+
+.player{
+    width: 35px;
+    height: 30px;
+    position: absolute;
+    z-index:10;
+    background-image: url('standing-turning.png');
+    background-position: 0 0;
+}
+.player.jumping{
+    background-image: url('spritesheet_3_tr_2.png');
+    background-position: -70px -30px;
+}
+.player.falling{
+    background-image: url('spritesheet_3_tr_2.png');
+    background-position: -175px -30px;
+}
+.player.stunned{
+    background-image: url('spritesheet_3_tr_2.png');
+    background-position: -105px -30px;
+}
+.player.falling.stunned{
+    background-image: url('spritesheet_3_tr_2.png');
+    background-position: -140px -30px;
+}
+.player.running{
+    background-image: url('running.png');
+}
+
+.animated {
+    .animation(play; .8s; 8; infinite);
+}
+
+@-webkit-keyframes play {
+    from { background-position: 0px 0px; }
+    to { background-position: -280px 0px;  }
+}
+
+@-moz-keyframes play {
+    from { background-position: 0px 0px; }
+    to { background-position: -280px 0px;  }
+}
+
+@-ms-keyframes play {
+    from { background-position: 0px 0px; }
+    to { background-position: -280px 0px;  }
+}
+
+@-o-keyframes play {
+    from { background-position: 0px 0px; }
+    to { background-position: -280px 0px;  }
+}
+
+@keyframes play {
+    from { background-position: 0px 0px; }
+    to { background-position: -280px 0px;  }
+}
+
+
+
+
+
+
+
