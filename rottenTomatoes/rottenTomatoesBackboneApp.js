@@ -35,6 +35,7 @@ define(['jquery', 'underscore', 'ramda', 'backbone', 'rottenTomatoesMovieVariabl
 		initialize: function(){
 		},
 		render: function(){
+			var id = 'runtime';
 			if(id){
 				chartPainter.paintChart(movies.list, this.el, id);
 			}else{
@@ -64,6 +65,7 @@ define(['jquery', 'underscore', 'ramda', 'backbone', 'rottenTomatoesMovieVariabl
 	window.LoadingView = Backbone.View.extend({
 		el: $("#loading"),
 		initialize: function(){
+			loadData();
 		}
 	});
 
@@ -73,17 +75,14 @@ define(['jquery', 'underscore', 'ramda', 'backbone', 'rottenTomatoesMovieVariabl
 		// $scope.loader = 'Loading data';
 
 		var processJsonp = ramda.curry(function(url, data){
-			// movies.list = movies.list.concat(ramda.reject(ramda.compose(_.isUndefined, ramda.prop('critics_rating'), ramda.prop('ratings')), data.movies));
 			movies.list = movies.list.concat(movieLoader.getMovies(data));
 			if(movieLoader.shouldLoadMoreMovies(data, movies.list)){
 				var urlNext = movieLoader.getNextUrl(url, data);
 				// $scope.loader += '...';
 				if(movieLoader.useFallbackData){
-					// $.get(urlNext);
-					$.get(urlNext, {}, processJsonp(movieLoader.url), 'json');
+					$.get(urlNext, {}, processJsonp(urlNext), 'json');
 				}else{
-					// $.get(urlNext, {'params':movieLoader.paramsAPI});
-					$.get(urlNext, movieLoader.paramsAPI, processJsonp(movieLoader.url), 'jsonp');
+					$.get(urlNext, movieLoader.paramsAPI, processJsonp(urlNext), 'jsonp');
 				}
 			}else{
 				//Remove loading overlay
@@ -94,10 +93,8 @@ define(['jquery', 'underscore', 'ramda', 'backbone', 'rottenTomatoesMovieVariabl
 		});
 
 		if(movieLoader.useFallbackData){
-			// $.ajaxSetup({dataType:'json', success:processJsonp(movieLoader.url)});
 			$.get(movieLoader.url, {}, processJsonp(movieLoader.url), 'json');
 		}else{
-			// $.ajaxSetup({dataType:'jsonp', success:processJsonp(movieLoader.url)});
 			$.get(movieLoader.url, movieLoader.paramsAPI, processJsonp(movieLoader.url), 'jsonp');
 		}
 	};

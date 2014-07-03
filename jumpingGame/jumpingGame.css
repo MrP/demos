@@ -21,19 +21,28 @@ body{
     z-index:1000;
 }
 #game{
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: relative;
+    margin: 0 auto;
     width: 213.33px;
     height: 320px;
     background-color: black;
     overflow: hidden;
-    -moz-transform-origin: top left;
-    -o-transform-origin: top left;
-    -webkit-transform-origin: top left;
-    -ms-transform-origin: top left;
-    transform-origin: top left;
     z-index: 1;
+    -webkit-transform-origin: top center;
+    -moz-transform-origin: top center;
+    -ms-transform-origin: top center;
+    -o-transform-origin: top center;
+    transform-origin: top center;
+    -webkit-transition-property: -webkit-transform;
+    -moz-transition-property: -moz-transform;
+    -ms-transition-property: -ms-transform;
+    -o-transition-property: -o-transform;
+    transition-property: transform;
+    -webkit-transition-duration: 0.5s;
+    -moz-transition-duration: 0.5s;
+    -ms-transition-duration: 0.5s;
+    -o-transition-duration: 0.5s;
+    transition-duration: 0.5s;
 }
 body:after{
     display:none;
@@ -72,7 +81,7 @@ body:after{
     -webkit-transform: scaleX(-1);
     transform: scaleX(-1);
     filter: FlipH;
-    -ms-filter: "FlipH";    
+    -ms-filter: "FlipH";
 }
 
 .player{
