@@ -11,15 +11,15 @@
     </div>
     <div id="chart">
     </div>
-    <div id="variables">
+    <div>
       <h3>Rotten Tomatoes scores of movies currently in theatres</h3>
-      <ul>
-        <li ng-repeat="(id, variable) in variables">
+      <ul id="variables">
+        <script id="variableTemplate" type="text/template">
           <label>
-            <input type="radio" ng-model="$parent.selectedVariable.id" name="selectedVariableId" ng-value="id" class="variable" />
-            <span ng-bind="variable.label"></span>
+            <input type="radio" name="selectedVariableId" value="<%= id %>" class="variable" />
+            <%= label %>
           </label>
-        </li>
+        </script>
       </ul>
     </div>
   </body>

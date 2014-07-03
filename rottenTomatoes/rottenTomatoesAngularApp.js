@@ -1,4 +1,4 @@
-define(['ramda', 'angular', 'rottenTomatoesMovieVariables', 'rottenTomatoesChartPainter'], function(ramda, angular, movieVariables, chartPainter){
+define(['ramda', 'angular', 'rottenTomatoesMovieVariables', 'rottenTomatoesChartPainter', 'rottenTomatoesMovieLoader'], function(ramda, angular, movieVariables, chartPainter, movieLoader){
 	var rottenTomatoesApp = angular.module('rottenTomatoesApp', []);
 
 	rottenTomatoesApp.factory('movies', function(){
@@ -19,32 +19,18 @@ define(['ramda', 'angular', 'rottenTomatoesMovieVariables', 'rottenTomatoesChart
 	}]);
 
 	rottenTomatoesApp.controller('LoadingCtrl', ['$scope', '$http', 'movies', 'variables', 'selectedVariable', function ($scope, $http, movies, variables, selectedVariable) {
-		var urlAPI = 'http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
-		var useFallbackData = /https/.test(document.location.protocol);
-		// From https we can't call http, and RT's API doesn't do https, so we'll load a bunch of static json files instead
-		if(useFallbackData){
-			urlAPI = 'in_theaters1.json';
-		}
-		var paramsAPI = {'apikey':'erwdg8fnngbwfw92krs7mw9w',
-			'callback':'JSON_CALLBACK',
-			'page_limit':'50'};
-
 		$scope.loader = 'Loading data';
 
-		//Gets the data from the server
-		// this is the function that will be called from the JSONP response, automatically.  See its name in the
-		// ajax GET URL
-		var processJsonp = function(data){
-			// Get rid of movies without ratings
-			movies.list = movies.list.concat(ramda.reject(ramda.compose(angular.isUndefined, ramda.prop('critics_rating'), ramda.prop('ratings')), data.movies));
-			if(data.links.next && movies.list.length<=100){ //Limit it to not hammer the API too much
+		var processJsonp = ramda.curry(function(url, data){
+			movies.list = movies.list.concat(movieLoader.getMovies(data));
+
+			if(movieLoader.shouldLoadMoreMovies(data, movies.list)){
 				$scope.loader += '...';
-				if(useFallbackData){
-					$http.get(urlAPI.replace(/(\d)/, function(n){return ""+(parseInt(n, 10)+1);}))
-						.success(processJsonp);
+				var urlNext = movieLoader.getNextUrl(url, data);
+				if(movieLoader.useFallbackData){
+					$http.get(urlNext).success(processJsonp(urlNext));
 				}else{
-					$http.jsonp(data.links.next, {'params':paramsAPI})
-						.success(processJsonp);
+					$http.jsonp(urlNext, {'params':movieLoader.paramsAPI}).success(processJsonp(urlNext));
 				}
 			}else{
 				//Remove loading overlay
@@ -52,14 +38,12 @@ define(['ramda', 'angular', 'rottenTomatoesMovieVariables', 'rottenTomatoesChart
 				//Auto-select one variable
 				selectedVariable.id = Object.keys(variables)[0];
 			}
-		};
+		});
 
-		if(useFallbackData){
-			$http.get(urlAPI)
-				.success(processJsonp);
+		if(movieLoader.useFallbackData){
+			$http.get(movieLoader.url).success(processJsonp(movieLoader.url));
 		}else{
-			$http.jsonp(urlAPI, {'params':paramsAPI})
-				.success(processJsonp);
+			$http.jsonp(movieLoader.url, {'params':movieLoader.paramsAPI}).success(processJsonp(movieLoader.url));
 		}
 
 	}]);
