@@ -16,4 +16,7 @@ Cool stuff
 <p>I'm tring to recreate a game I remember from my Spectrum days, in JavaScript</p>
 <a target="_blank" href="http://rawgit.com/MrP/demos/master/jumpingGame/jumpingGame.html">Jumping Game</a>
 
+<h2>Coin toss guessing puzzle</h2>
+<p>This puzzle here: https://m.whitehouse.gov/blog/2015/05/17/hello-world</p>
+<a target="_blank" href="http://rawgit.com/MrP/demos/master/helloWorldPuzzle/index.html">Coin toss guessing puzzle</a>
 
