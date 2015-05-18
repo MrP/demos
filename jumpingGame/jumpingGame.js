@@ -10,15 +10,15 @@ require.config({
     }
 });
 
-require(['underscore', 'jquery', 'jumpingGameUtil', 'jumpingGameWorld', 'jumpingGameDOMRenderer', 'jumpingGameInteraction'], function(_, $, util, gameWorld, renderer, interaction){
-    var gameTick = function(renderer, gameState, now) {
+require(['underscore', 'jquery', 'jumpingGameUtil', 'jumpingGameWorld', 'jumpingGameDOMRenderer', 'jumpingGameInteraction'], function (_, $, util, gameWorld, renderer, interaction) {
+    var gameTick = function (renderer, gameState, now) {
         var dt = (now - last) / 1000;
         last = now;
-        if(dt>1){
+        if (dt > 1) {
             gameState.paused = true;
         }
         dt *= gameState.gameSpeed;
-        if(!gameState.paused){
+        if (!gameState.paused) {
             gameState.updateGameState(gameState, dt);
         }
         renderer.renderFrame(gameState, dt);
@@ -32,9 +32,8 @@ require(['underscore', 'jquery', 'jumpingGameUtil', 'jumpingGameWorld', 'jumping
     interaction.setupInteraction(gameWorld);
     var last = util.timestamp();
     var rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameWorld));
-    
-    $(window).on('resize', function(){
+
+    $(window).on('resize', function () {
         renderer.init(gameWorld);
     });
 });
-
