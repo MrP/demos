@@ -1,37 +1,39 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <style>
-    body {
-        max-width: 800px;
-        margin-left: auto;
-        margin-right: auto;
-        margin-bottom: 100px;
-        font-family: Helvetica;
-        padding: 20px;
-    }
-    pre {
-        border: solid;
-        padding: 20px;
-        overflow-x: auto;
-    }
+        body {
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 100px;
+            font-family: Helvetica;
+            padding: 20px;
+        }
+        pre {
+            border: solid;
+            padding: 20px;
+            overflow-x: auto;
+        }
     </style>
     <script>
         var strategyTester = function (aliceGuessGenerator, bobGuessGenerator) {
             var gameResult = function (resultAlice, resultBob) {
                 var guessAliceForBob = aliceGuessGenerator(resultAlice);
                 var guessBobForAlice = bobGuessGenerator(resultBob);
-                if (guessAliceForBob !== resultBob && 
-                guessBobForAlice !== resultAlice) {
+                if (guessAliceForBob !== resultBob &&
+                    guessBobForAlice !== resultAlice) {
                     return false;
-                } else {
+                }
+                else {
                     return true;
                 }
             };
             return gameResult('Heads', 'Heads') &&
-            gameResult('Heads', 'Tails') &&
-            gameResult('Tails', 'Heads') &&
-            gameResult('Tails', 'Tails');
+                gameResult('Heads', 'Tails') &&
+                gameResult('Tails', 'Heads') &&
+                gameResult('Tails', 'Tails');
         };
         var headsGenerator = function (ownResult) {
             return 'Heads';
@@ -46,79 +48,58 @@
         };
         sameGenerator.printName = 'Same';
         var oppositeGenerator = function (ownResult) {
-            return ownResult === 'Heads'?'Tails':'Heads';
+            return ownResult === 'Heads' ? 'Tails' : 'Heads';
         };
         oppositeGenerator.printName = 'Opposite';
-        
-        var individualStrategies = [headsGenerator, tailsGenerator, 
-        sameGenerator, oppositeGenerator];
-        
+
+        var individualStrategies = [headsGenerator, tailsGenerator,
+            sameGenerator, oppositeGenerator
+        ];
+
         window.results = [];
         individualStrategies.forEach(function (aliceStrategy) {
             individualStrategies.forEach(function (bobStrategy) {
-                window.results.push('Alice guesses "'+
-                aliceStrategy.printName+'", Bob guesses "'+
-                bobStrategy.printName +  '" and the result is: '+
-                (strategyTester(aliceStrategy, bobStrategy)?'WIN':'lose'));
+                window.results.push('Alice guesses "' +
+                    aliceStrategy.printName + '", Bob guesses "' +
+                    bobStrategy.printName + '" and the result is: ' +
+                    (strategyTester(aliceStrategy, bobStrategy) ?
+                        'WIN' : 'lose'));
             });
         });
-
     </script>
 </head>
 
 <body>
-    <h2>The puzzle</h2> 
-    <p><a href="https://m.whitehouse.gov/blog/2015/05/17/hello-world">https://m.whitehouse.gov/blog/2015/05/17/hello-world</a></p>
+    <h2>The puzzle</h2>
+    <p><a href="https://m.whitehouse.gov/blog/2015/05/17/hello-world">
+        https://m.whitehouse.gov/blog/2015/05/17/hello-world</a>
+    </p>
     <blockquote>
-        Alice and Bob are playing a game.  They are teammates, so they will win 
-        or lose together.  Before the game starts, they can talk to each other 
-        and agree on a strategy. 
-        <br>
-        When the game starts, Alice and Bob go into separate soundproof rooms - 
-        they cannot communicate with each other in any way.  They each flip a 
-        coin and note whether it came up Heads or Tails.  (No funny business 
-        allowed - it has to be an honest coin flip and they have to tell the 
-        truth later about how it came out.)  Now Alice writes down a guess as to
-        the result of Bob's coin flip; and Bob likewise writes down a guess as 
-        to Alice's flip.
-        <br>
-        If either or both of the written-down guesses turns out to be correct, 
-        then Alice and Bob both win as a team.  But if both written-down guesses
-        are wrong, then they both lose.
-        <br>
-        The puzzle is this: Can you think of a strategy Alice and Bob can use 
-        that is guaranteed to win every time?
-        
+        Alice and Bob are playing a game. They are teammates, so they will win or lose together. Before the game starts, they can talk to each other and agree on a strategy.
+        <br> When the game starts, Alice and Bob go into separate soundproof rooms - they cannot communicate with each other in any way. They each flip a coin and note whether it came up Heads or Tails. (No funny business allowed - it has to be an honest
+        coin flip and they have to tell the truth later about how it came out.) Now Alice writes down a guess as to the result of Bob's coin flip; and Bob likewise writes down a guess as to Alice's flip.
+        <br> If either or both of the written-down guesses turns out to be correct, then Alice and Bob both win as a team. But if both written-down guesses are wrong, then they both lose.
+        <br> The puzzle is this: Can you think of a strategy Alice and Bob can use that is guaranteed to win every time?
+
     </blockquote>
     <h2>The reasoning</h2>
-    <p>As stated in the OP, any static strategy (Alice and Bob choosing any 
-    combination of Heads or Tails) will not work.</p>
-    <p>Also, the only information Alice and Bob have at the point of making a guess for
-    the other's coin toss is the result of their own coin toss.</p>
-    <p>So, with one bit of information as input and one bit of information as
-    output, there's not a lot that can happen in between: the result will be
-    either
-    <ul>
-        <li>Independent of the input (always guess Heads)</li>
-        <li>Independent of the input (always guess Tails)</li>
-        <li>The same as the input</li>
-        <li>The opposite of the input</li>
-    </ul>
+    <p>As stated in the OP, any static strategy (Alice and Bob choosing any combination of Heads or Tails) will not work.</p>
+    <p>Also, the only information Alice and Bob have at the point of making a guess for the other's coin toss is the result of their own coin toss.
     </p>
-    <p>But those are the four possible strategies for just Alice or Bob.  
-    (You could say there are more e.g. choose randomly, but I don't think they 
-    are worth considering to win the game deterministically every time.)<br>
-    The combined team strategy is a pair of individual strategies that doesn't
-    necessarily have to be the same.  That's 16 possible team strategies.</p>
-    <p>And how can we tell if a single team strategy wins the game every time?
-    We play the game with every possible coin toss result (4) and check our 
-    guesses against them.</p>
-    <p>That's a solution space of 16*4=64  possibilities, which is quite 
-    feasible to explore by hand.  Even more so when we can discard a bunch of
-    strategies outright, like the "static" ones that is easy to reason all have
-    counterexamples.</p>
-    <p>But where's the fun in that?  Lets instead code a little program to check
-    every strategy combination and see what happens!</p>
+    <p>So, with one bit of information as input and one bit of information as output, there's not a lot that can happen in between: the result will be either
+        <ul>
+            <li>Independent of the input (always guess Heads)</li>
+            <li>Independent of the input (always guess Tails)</li>
+            <li>The same as the input</li>
+            <li>The opposite of the input</li>
+        </ul>
+    </p>
+    <p>But those are the four possible strategies for just Alice or Bob. (You could say there are more e.g. choose randomly, but I don't think they are worth considering to win the game deterministically every time.)
+        <br> The combined team strategy is a pair of individual strategies that doesn't necessarily have to be the same. That's 16 possible team strategies.</p>
+    <p>And how can we tell if a single team strategy wins the game every time? We play the game with every possible coin toss result (4) and check our guesses against them.</p>
+    <p>That's a solution space of 16*4=64 possibilities, which is quite feasible to explore by hand. Even more so when we can discard a bunch of strategies outright, like the "static" ones that is easy to reason all have counterexamples.
+    </p>
+    <p>But where's the fun in that? Lets instead code a little program to check every strategy combination and see what happens!</p>
     <pre>
         var strategyTester = function (aliceGuessGenerator, bobGuessGenerator) {
             var gameResult = function (resultAlice, resultBob) {
@@ -169,21 +150,18 @@
     </pre>
     <p>And the results of runing it:</p>
     <ul>
-    <script>
-        results.forEach(function (result) {
-            document.write('<li>'+result+'</li>');
-        });
-    </script>
+        <script>
+            window.results.forEach(function (result) {
+                document.write('<li>' + result + '</li>');
+            });
+        </script>
     </ul>
-    
+
     <h2>The solution</h2>
-    
-    <p>We have a winner! One has to guess the same as their coin toss, and the 
-    other has to guess the opposite of their own coin toss.</p>
-    <p>Does that make sense? Yes, they cannot be both wrong at the same time if one
-    guesses their coin tosses are the same, and the other guesses their coin 
-    tosses are different, now, can they?  There you go, QED.</p>
-    
+
+    <p>We have a winner! One has to guess the same as their coin toss, and the other has to guess the opposite of their own coin toss.</p>
+    <p>Does that make sense? Yes, they cannot be both wrong at the same time if one guesses their coin tosses are the same, and the other guesses their coin tosses are different, now, can they? There you go, QED.</p>
+
 </body>
 
 </html>
