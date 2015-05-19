@@ -10,7 +10,9 @@ require.config({
     }
 });
 
-require(['underscore', 'jquery', 'jumpingGameUtil', 'jumpingGameWorld', 'jumpingGameDOMRenderer', 'jumpingGameInteraction'], function (_, $, util, gameWorld, renderer, interaction) {
+require(['underscore', 'jquery', 'jumpingGameUtil', 'jumpingGameWorld',
+    'jumpingGameDOMRenderer', 'jumpingGameInteraction'
+], function (_, $, util, gameWorld, renderer, interaction) {
     var gameTick = function (renderer, gameState, now) {
         var dt = (now - last) / 1000;
         last = now;
@@ -22,7 +24,8 @@ require(['underscore', 'jquery', 'jumpingGameUtil', 'jumpingGameWorld', 'jumping
             gameState.updateGameState(gameState, dt);
         }
         renderer.renderFrame(gameState, dt);
-        rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameState));
+        rafID = window.requestAnimationFrame(_.partial(
+            gameTick, renderer, gameState));
     };
 
     // var renderer = createDOMRenderer(_, $, window);
@@ -31,7 +34,8 @@ require(['underscore', 'jquery', 'jumpingGameUtil', 'jumpingGameWorld', 'jumping
     // renderer.initLevel(gameWorld);
     interaction.setupInteraction(gameWorld);
     var last = util.timestamp();
-    var rafID = window.requestAnimationFrame(_.partial(gameTick, renderer, gameWorld));
+    var rafID = window.requestAnimationFrame(_.partial(gameTick,
+        renderer, gameWorld));
 
     $(window).on('resize', function () {
         renderer.init(gameWorld);
