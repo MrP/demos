@@ -2,6 +2,17 @@
 <html>
 <head>
     <style>
+    body {
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 100px;
+        font-family: Helvetica;
+    }
+    pre {
+        border: solid;
+        padding: 20px;
+    }
     </style>
     <script>
         var strategyTester = function (aliceGuessGenerator, bobGuessGenerator) {
@@ -66,8 +77,8 @@
         coin and note whether it came up Heads or Tails.  (No funny business 
         allowed - it has to be an honest coin flip and they have to tell the 
         truth later about how it came out.)  Now Alice writes down a guess as to
-        the result of Bob’s coin flip; and Bob likewise writes down a guess as 
-        to Alice’s flip.
+        the result of Bob's coin flip; and Bob likewise writes down a guess as 
+        to Alice's flip.
         <br>
         If either or both of the written-down guesses turns out to be correct, 
         then Alice and Bob both win as a team.  But if both written-down guesses
@@ -162,6 +173,8 @@
         });
     </script>
     </ul>
+    
+    <h2>The solution</h2>
     
     <p>We have a winner! One has to guess the same as their coin toss, and the 
     other has to guess the opposite of their own coin toss.</p>
