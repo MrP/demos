@@ -1,7 +1,7 @@
 require.config({
   paths: {
     angular: '//ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.13/angular.min',
-    ramda: '//rawgit.com/CrossEye/ramda/master/ramda',
+    ramda: '//cdn.jsdelivr.net/npm/ramda@0.25.0/dist/ramda.min.js',
     google: 'googlejsapi'
   },
   shim: {
