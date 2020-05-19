@@ -1,5 +1,5 @@
 (function(){
-	var urlAPI = 'http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
+	var urlAPI = '//api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
 	var paramsAPI = {'apikey':'erwdg8fnngbwfw92krs7mw9w', 
 		'callback':'processJsonp',
 		'page_limit':'50'};
