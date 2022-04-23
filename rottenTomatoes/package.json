@@ -6,8 +6,8 @@
     "grunt": "1.5.2",
     "grunt-closure-tools": "^1.0.0",
     "grunt-karma": "^4.0.2",
-    "karma": "^4.0.0",
-    "karma-jasmine": "^0.1.5",
-    "phantomjs": "^1.9.7-10"
+    "karma": "^6.3.19",
+    "karma-jasmine": "^5.0.0",
+    "phantomjs": "^2.1.7"
   }
 }
